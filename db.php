@@ -6,21 +6,26 @@
  * =============================================================================
  */
 
-// Detección automática de entorno (Local vs Hosting)
+// Detección automática de entorno (Local vs InfinityFree vs Hostinger)
 $httpHost = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
 $isLocal = (stripos($httpHost, 'localhost') !== false || stripos($httpHost, '127.0.0.1') !== false);
+$isInfinityFree = (stripos($httpHost, 'ct.ws') !== false || stripos($httpHost, 'infinityfree') !== false || stripos($httpHost, 'epizy') !== false);
 
 if (!defined('DB_HOST')) {
     if ($isLocal) {
-        // Configuración para XAMPP en tu computadora
+        // 1. Configuración para XAMPP en tu computadora
         define('DB_HOST', 'localhost');
         define('DB_NAME', 'rincon3d');
         define('DB_USER', 'root');
         define('DB_PASS', '');
+    } elseif ($isInfinityFree) {
+        // 2. Configuración para InfinityFree (rincon3d.ct.ws)
+        define('DB_HOST', 'sql309.infinityfree.com');
+        define('DB_NAME', 'if0_42396337_rincon3d');
+        define('DB_USER', 'if0_42396337');
+        define('DB_PASS', 'tomas140203');
     } else {
-        // =====================================================================
-        // CONFIGURACIÓN PARA HOSTINGER
-        // =====================================================================
+        // 3. Configuración para Hostinger (o dominio de producción)
         define('DB_HOST', 'localhost');
         define('DB_NAME', 'u390617164_rincon3D');
         define('DB_USER', 'u390617164_rincon3D');

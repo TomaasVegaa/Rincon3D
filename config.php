@@ -25,8 +25,9 @@ $defaults = [
     'banner_description' => 'Fabricamos piezas únicas con filamentos biodegradables de primera calidad. Desde recuerdos personalizados en litofanía y mates térmicos hasta iluminación ambiental y decoración.'
 ];
 
-// Cargar configuración desde la Base de Datos si está disponible
+// Cargar configuración desde la Base de Datos o archivo de respaldo
 $db = getDB();
+$settingsLoaded = false;
 if ($db) {
     try {
         $stmt = $db->query("SELECT clave, valor FROM configuracion");
@@ -37,8 +38,19 @@ if ($db) {
                 $defaults[$key] = is_numeric($defaults[$key]) ? (float)$val : $val;
             }
         }
+        $settingsLoaded = true;
     } catch (Throwable $e) {
         error_log("Error cargando configuracion desde DB: " . $e->getMessage());
+    }
+}
+
+if (!$settingsLoaded) {
+    $settingsPath = __DIR__ . '/data/settings.json';
+    if (file_exists($settingsPath)) {
+        $saved = json_decode(file_get_contents($settingsPath), true);
+        if (is_array($saved)) {
+            $defaults = array_merge($defaults, $saved);
+        }
     }
 }
 
@@ -229,7 +241,67 @@ function toggleProductJson(int $productId) {
 }
 
 /**
- * Obtiene las categorías activas desde MySQL
+ * Retorna todas las categorías desde data/categories.json
+ */
+function getAllCategoriesFromJson() {
+    $path = __DIR__ . '/data/categories.json';
+    if (file_exists($path)) {
+        return json_decode(file_get_contents($path), true) ?: [];
+    }
+    return [];
+}
+
+/**
+ * Guarda las categorías en data/categories.json
+ */
+function saveCategoriesJson(array $categories) {
+    $path = __DIR__ . '/data/categories.json';
+    return file_put_contents($path, json_encode($categories, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) !== false;
+}
+
+/**
+ * Guarda o actualiza una categoría individual en data/categories.json
+ */
+function syncCategoryToJson(array $data) {
+    $categories = getAllCategoriesFromJson();
+    $found = false;
+    $targetId = (int)($data['id'] ?? 0);
+
+    foreach ($categories as $i => $c) {
+        if ((int)$c['id'] === $targetId) {
+            $categories[$i] = array_merge($c, $data);
+            $found = true;
+            break;
+        }
+    }
+
+    if (!$found) {
+        if ($targetId <= 0) {
+            $maxId = 0;
+            foreach ($categories as $c) {
+                if ((int)$c['id'] > $maxId) $maxId = (int)$c['id'];
+            }
+            $data['id'] = $maxId + 1;
+        }
+        $categories[] = $data;
+    }
+
+    return saveCategoriesJson($categories);
+}
+
+/**
+ * Elimina una categoría de data/categories.json
+ */
+function deleteCategoryFromJson(int $catId) {
+    $categories = getAllCategoriesFromJson();
+    $filtered = array_values(array_filter($categories, function($c) use ($catId) {
+        return (int)$c['id'] !== $catId;
+    }));
+    return saveCategoriesJson($filtered);
+}
+
+/**
+ * Obtiene las categorías activas desde MySQL o data/categories.json
  */
 function getCategories($onlyActive = true) {
     $db = getDB();
@@ -246,7 +318,18 @@ function getCategories($onlyActive = true) {
         }
     }
 
-    // Categorías por defecto si la base de datos no está disponible
+    // Respaldo desde data/categories.json
+    $jsonCats = getAllCategoriesFromJson();
+    if (!empty($jsonCats)) {
+        if ($onlyActive) {
+            return array_values(array_filter($jsonCats, function($c) {
+                return !isset($c['activo']) || $c['activo'] == 1 || $c['activo'] === true;
+            }));
+        }
+        return $jsonCats;
+    }
+
+    // Categorías por defecto si el archivo JSON no existe
     return [
         ['id' => 1, 'slug' => 'iluminacion', 'nombre' => 'Iluminación & Lámparas', 'icono' => '💡', 'orden' => 1, 'activo' => 1],
         ['id' => 2, 'slug' => 'mates', 'nombre' => 'Mates & Bazar', 'icono' => '🧉', 'orden' => 2, 'activo' => 1],

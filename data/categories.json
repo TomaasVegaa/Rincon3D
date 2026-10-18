@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "slug": "iluminacion",
+    "nombre": "Iluminación & Lámparas",
+    "icono": "💡",
+    "orden": 1,
+    "activo": 1
+  },
+  {
+    "id": 2,
+    "slug": "mates",
+    "nombre": "Mates & Bazar",
+    "icono": "🧉",
+    "orden": 2,
+    "activo": 1
+  },
+  {
+    "id": 3,
+    "slug": "decoracion",
+    "nombre": "Decoración & Plantas",
+    "icono": "🪴",
+    "orden": 3,
+    "activo": 1
+  },
+  {
+    "id": 4,
+    "slug": "organizacion",
+    "nombre": "Organización & Oficina",
+    "icono": "📦",
+    "orden": 4,
+    "activo": 1
+  },
+  {
+    "id": 5,
+    "slug": "figuras",
+    "nombre": "Figuras & Coleccionables",
+    "icono": "🐉",
+    "orden": 5,
+    "activo": 1
+  }
+]

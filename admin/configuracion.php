@@ -18,23 +18,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'bank_cbu' => trim($_POST['bank_cbu'] ?? ''),
         'bank_holder' => trim($_POST['bank_holder'] ?? ''),
         'bank_discount_percent' => (float)($_POST['bank_discount_percent'] ?? 10),
-        'banner_visible' => isset($_POST['banner_visible']) ? '1' : '0',
+        'banner_visible' => isset($_POST['banner_visible']) ? 1 : 0,
         'banner_title' => trim($_POST['banner_title'] ?? ''),
         'banner_description' => trim($_POST['banner_description'] ?? '')
     ];
 
+    // 1. Guardar en MySQL si está disponible
+    $savedInDb = false;
     if ($db) {
         try {
             $stmt = $db->prepare("INSERT INTO configuracion (clave, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)");
             foreach ($settings as $k => $v) {
                 $stmt->execute([$k, (string)$v]);
             }
-            $message = "¡Configuración guardada correctamente! Los cambios ya se reflejan en el Front.";
-        } catch (Exception $e) {
-            $message = "Error guardando en BD: " . $e->getMessage();
-            $messageType = 'error';
+            $savedInDb = true;
+        } catch (Throwable $e) {
+            error_log("Error guardando configuracion en MySQL: " . $e->getMessage());
         }
     }
+
+    // 2. Guardar SIEMPRE en data/settings.json (respaldo local y fallback)
+    $settingsPath = __DIR__ . '/../data/settings.json';
+    file_put_contents($settingsPath, json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+    header("Location: configuracion.php?saved=1&storage=" . ($savedInDb ? 'mysql' : 'json'));
+    exit;
+}
+
+if (isset($_GET['saved'])) {
+    if (isset($_GET['storage']) && $_GET['storage'] === 'json') {
+        $message = "✨ ¡Configuración guardada exitosamente en el archivo local de la tienda!";
+    } else {
+        $message = "✨ ¡Configuración guardada correctamente en la Base de Datos y archivo local!";
+    }
+    $messageType = 'success';
 }
 
 // Cargar valores actuales
@@ -53,6 +70,7 @@ $current = [
     'banner_description' => BANNER_DESCRIPTION
 ];
 
+$settingsFromDb = false;
 if ($db) {
     try {
         $stmt = $db->query("SELECT clave, valor FROM configuracion");
@@ -61,7 +79,18 @@ if ($db) {
                 $current[$r['clave']] = $r['valor'];
             }
         }
-    } catch (Exception $e) {}
+        $settingsFromDb = true;
+    } catch (Throwable $e) {}
+}
+
+if (!$settingsFromDb) {
+    $settingsPath = __DIR__ . '/../data/settings.json';
+    if (file_exists($settingsPath)) {
+        $saved = json_decode(file_get_contents($settingsPath), true);
+        if (is_array($saved)) {
+            $current = array_merge($current, $saved);
+        }
+    }
 }
 ?>
 <!DOCTYPE html>

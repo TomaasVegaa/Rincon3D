@@ -52,7 +52,7 @@ $categories = getCategories();
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Estilos principales -->
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=<?php echo file_exists(__DIR__ . '/assets/css/style.css') ? filemtime(__DIR__ . '/assets/css/style.css') : '1.1'; ?>">
   
   <!-- Configuración exportada para JavaScript -->
   <script>
@@ -493,6 +493,6 @@ $categories = getCategories();
   </footer>
 
   <!-- Scripts -->
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=<?php echo file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ . '/assets/js/app.js') : '1.1'; ?>"></script>
 </body>
 </html>

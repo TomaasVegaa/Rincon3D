@@ -12,37 +12,69 @@ $editingCategory = null;
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     if ($db) {
-        $stmt = $db->prepare("UPDATE categorias SET activo = 1 - activo WHERE id = ?");
-        $stmt->execute([$id]);
-        $message = "Estado de la categoría actualizado.";
+        try {
+            $stmt = $db->prepare("UPDATE categorias SET activo = 1 - activo WHERE id = ?");
+            $stmt->execute([$id]);
+        } catch (Throwable $e) {}
     }
+    // Sincronizar en JSON
+    $jsonCats = getAllCategoriesFromJson();
+    foreach ($jsonCats as $i => $c) {
+        if ((int)$c['id'] === $id) {
+            $jsonCats[$i]['activo'] = empty($c['activo']) ? 1 : 0;
+            break;
+        }
+    }
+    saveCategoriesJson($jsonCats);
+    $message = "Estado de la categoría actualizado.";
 }
 
 // Acción: Eliminar categoría
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
-    if ($db) {
-        // Verificar si tiene productos vinculados
-        $stmtCheck = $db->prepare("SELECT COUNT(*) FROM productos WHERE categoria_id = ?");
-        $stmtCheck->execute([$id]);
-        $count = (int)$stmtCheck->fetchColumn();
+    $canDelete = true;
 
-        if ($count > 0) {
-            $message = "No se puede eliminar la categoría porque tiene $count producto(s) asignado(s). Primero reasigna o elimina esos productos.";
-            $messageType = 'error';
-        } else {
-            $stmtDel = $db->prepare("DELETE FROM categorias WHERE id = ?");
-            $stmtDel->execute([$id]);
-            $message = "Categoría eliminada correctamente.";
-        }
+    if ($db) {
+        try {
+            $stmtCheck = $db->prepare("SELECT COUNT(*) FROM productos WHERE categoria_id = ?");
+            $stmtCheck->execute([$id]);
+            $count = (int)$stmtCheck->fetchColumn();
+            if ($count > 0) {
+                $canDelete = false;
+                $message = "No se puede eliminar la categoría porque tiene $count producto(s) asignado(s).";
+                $messageType = 'error';
+            } else {
+                $stmtDel = $db->prepare("DELETE FROM categorias WHERE id = ?");
+                $stmtDel->execute([$id]);
+            }
+        } catch (Throwable $e) {}
+    }
+
+    if ($canDelete) {
+        deleteCategoryFromJson($id);
+        $message = "Categoría eliminada correctamente.";
     }
 }
 
 // Cargar categoría para edición si se pasó id
-if (isset($_GET['edit_id']) && (int)$_GET['edit_id'] > 0 && $db) {
-    $stmt = $db->prepare("SELECT * FROM categorias WHERE id = ?");
-    $stmt->execute([(int)$_GET['edit_id']]);
-    $editingCategory = $stmt->fetch();
+if (isset($_GET['edit_id']) && (int)$_GET['edit_id'] > 0) {
+    $editId = (int)$_GET['edit_id'];
+    if ($db) {
+        try {
+            $stmt = $db->prepare("SELECT * FROM categorias WHERE id = ?");
+            $stmt->execute([$editId]);
+            $editingCategory = $stmt->fetch();
+        } catch (Throwable $e) {}
+    }
+    if (!$editingCategory) {
+        $jsonCats = getAllCategoriesFromJson();
+        foreach ($jsonCats as $c) {
+            if ((int)$c['id'] === $editId) {
+                $editingCategory = $c;
+                break;
+            }
+        }
+    }
 }
 
 // Procesar formulario (Crear o Actualizar)
@@ -62,29 +94,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($nombre)) {
         $message = "Por favor ingresa un nombre para la categoría.";
         $messageType = "error";
-    } elseif ($db) {
-        try {
-            if ($id > 0) {
-                // Actualizar
-                $stmt = $db->prepare("UPDATE categorias SET nombre = ?, icono = ?, slug = ?, orden = ?, activo = ? WHERE id = ?");
-                $stmt->execute([$nombre, $icono, $slug, $orden, $activo, $id]);
-                $message = "¡Categoría actualizada exitosamente!";
-            } else {
-                // Crear nueva
-                $stmt = $db->prepare("INSERT INTO categorias (nombre, icono, slug, orden, activo) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$nombre, $icono, $slug, $orden, $activo]);
-                $message = "¡Categoría creada exitosamente!";
+    } else {
+        $savedInDb = false;
+        if ($db) {
+            try {
+                if ($id > 0) {
+                    $stmt = $db->prepare("UPDATE categorias SET nombre = ?, icono = ?, slug = ?, orden = ?, activo = ? WHERE id = ?");
+                    $stmt->execute([$nombre, $icono, $slug, $orden, $activo, $id]);
+                } else {
+                    $stmt = $db->prepare("INSERT INTO categorias (nombre, icono, slug, orden, activo) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$nombre, $icono, $slug, $orden, $activo]);
+                    $id = (int)$db->lastInsertId();
+                }
+                $savedInDb = true;
+            } catch (Throwable $e) {
+                error_log("Error en base de datos al guardar categoría: " . $e->getMessage());
             }
-            $editingCategory = null;
-        } catch (Throwable $e) {
-            $message = "Error en base de datos: " . $e->getMessage();
-            $messageType = "error";
         }
+
+        // Sincronizar en data/categories.json
+        $catData = [
+            'id' => $id,
+            'nombre' => $nombre,
+            'icono' => $icono,
+            'slug' => $slug,
+            'orden' => $orden,
+            'activo' => $activo
+        ];
+        syncCategoryToJson($catData);
+
+        $editingCategory = null;
+        $message = $id > 0 ? "¡Categoría actualizada exitosamente!" : "¡Categoría creada exitosamente!";
+        $messageType = "success";
     }
 }
 
 // Consultar todas las categorías con conteo de productos
 $categories = [];
+$catsFromDb = false;
 if ($db) {
     try {
         $sql = "SELECT c.*, 
@@ -92,9 +139,21 @@ if ($db) {
                 FROM categorias c
                 ORDER BY c.orden ASC, c.id ASC";
         $categories = $db->query($sql)->fetchAll();
-    } catch (Throwable $e) {
-        $message = "Error consultando categorías: " . $e->getMessage();
-        $messageType = "error";
+        $catsFromDb = true;
+    } catch (Throwable $e) {}
+}
+
+if (!$catsFromDb) {
+    $categories = getAllCategoriesFromJson();
+    $allProds = getAllProductsFromJson();
+    foreach ($categories as $idx => $cat) {
+        $count = 0;
+        foreach ($allProds as $p) {
+            if (($p['category'] ?? '') === $cat['slug']) {
+                $count++;
+            }
+        }
+        $categories[$idx]['total_productos'] = $count;
     }
 }
 ?>

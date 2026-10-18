@@ -1,0 +1,15 @@
+{
+  "store_name": "Rincón 3D",
+  "store_tagline": "Impresiones 3D & Diseños Personalizados",
+  "whatsapp_phone": "5491122334455",
+  "currency_symbol": "$",
+  "shipping_cost": 3500,
+  "free_shipping_threshold": 35000,
+  "bank_alias": "RINCON.3D.MP",
+  "bank_cbu": "0000003100085469213456",
+  "bank_holder": "Elisa - Rincón 3D",
+  "bank_discount_percent": 10,
+  "banner_visible": 1,
+  "banner_title": "Arte, diseño y tecnología en cada rincón",
+  "banner_description": "Fabricamos piezas únicas con filamentos biodegradables de primera calidad. Desde recuerdos personalizados en litofanía y mates térmicos hasta iluminación ambiental y decoración."
+}
