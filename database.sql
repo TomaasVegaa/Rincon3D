@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `usuarios` (`id`, `username`, `password_hash`, `nombre`, `email`, `rol`) VALUES
-(1, 'elisa', '$2y$10$GY9Q8pNw.XxPz4nwNpwyZenRnWOxC0/F47QrU/nUTa/DrzrTt4yJW', 'Elisa - Rincón 3D', 'elisa@rincon3d.com', 'admin')
+(1, 'elisa', '$2y$10$6v1/2a2nVTe1L4LDUH7Tbe0OG.2fzno3yRbhzNLVf4ioTLvvyLzPi', 'Elisa - Rincón 3D', 'elisa@rincon3d.com', 'admin')
 ON DUPLICATE KEY UPDATE `username` = VALUES(`username`), `password_hash` = VALUES(`password_hash`);
 
 -- -----------------------------------------------------------------------------
