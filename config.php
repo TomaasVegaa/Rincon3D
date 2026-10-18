@@ -142,10 +142,90 @@ function getProducts() {
     $jsonPath = __DIR__ . '/data/products.json';
     if (file_exists($jsonPath)) {
         $content = file_get_contents($jsonPath);
-        return json_decode($content, true) ?: [];
+        $all = json_decode($content, true) ?: [];
+        return array_values(array_filter($all, function($p) {
+            return !isset($p['active']) || $p['active'] === true || $p['active'] === 1;
+        }));
     }
 
     return [];
+}
+
+/**
+ * Retorna todos los productos del archivo JSON (activos e inactivos)
+ */
+function getAllProductsFromJson() {
+    $jsonPath = __DIR__ . '/data/products.json';
+    if (file_exists($jsonPath)) {
+        $content = file_get_contents($jsonPath);
+        return json_decode($content, true) ?: [];
+    }
+    return [];
+}
+
+/**
+ * Guarda el array completo de productos en data/products.json
+ */
+function saveProductsJson(array $products) {
+    $jsonPath = __DIR__ . '/data/products.json';
+    $json = json_encode($products, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    return file_put_contents($jsonPath, $json) !== false;
+}
+
+/**
+ * Guarda o actualiza un producto individual en data/products.json
+ */
+function syncProductToJson(array $data) {
+    $products = getAllProductsFromJson();
+    $found = false;
+    $targetId = (int)($data['id'] ?? 0);
+
+    foreach ($products as $i => $p) {
+        if ((int)$p['id'] === $targetId) {
+            $products[$i] = array_merge($p, $data);
+            $found = true;
+            break;
+        }
+    }
+
+    if (!$found) {
+        if ($targetId <= 0) {
+            $maxId = 0;
+            foreach ($products as $p) {
+                if ((int)$p['id'] > $maxId) $maxId = (int)$p['id'];
+            }
+            $data['id'] = $maxId + 1;
+        }
+        $products[] = $data;
+    }
+
+    return saveProductsJson($products);
+}
+
+/**
+ * Elimina un producto de data/products.json
+ */
+function deleteProductFromJson(int $productId) {
+    $products = getAllProductsFromJson();
+    $filtered = array_values(array_filter($products, function($p) use ($productId) {
+        return (int)$p['id'] !== $productId;
+    }));
+    return saveProductsJson($filtered);
+}
+
+/**
+ * Alterna el estado activo/pausado de un producto en data/products.json
+ */
+function toggleProductJson(int $productId) {
+    $products = getAllProductsFromJson();
+    foreach ($products as $i => $p) {
+        if ((int)$p['id'] === $productId) {
+            $current = !isset($p['active']) || $p['active'] === true || $p['active'] === 1;
+            $products[$i]['active'] = !$current;
+            break;
+        }
+    }
+    return saveProductsJson($products);
 }
 
 /**
@@ -157,7 +237,10 @@ function getCategories($onlyActive = true) {
         try {
             $where = $onlyActive ? "WHERE activo = 1" : "";
             $stmt = $db->query("SELECT * FROM categorias $where ORDER BY orden ASC, id ASC");
-            return $stmt->fetchAll() ?: [];
+            $rows = $stmt->fetchAll();
+            if (!empty($rows)) {
+                return $rows;
+            }
         } catch (Throwable $e) {
             error_log("Error consultando categorías de MySQL: " . $e->getMessage());
         }

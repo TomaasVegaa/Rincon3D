@@ -10,20 +10,26 @@ $messageType = 'success';
 if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     if ($db) {
-        $stmt = $db->prepare("UPDATE productos SET activo = 1 - activo WHERE id = ?");
-        $stmt->execute([$id]);
-        $message = "Estado del producto actualizado.";
+        try {
+            $stmt = $db->prepare("UPDATE productos SET activo = 1 - activo WHERE id = ?");
+            $stmt->execute([$id]);
+        } catch (Throwable $e) {}
     }
+    toggleProductJson($id);
+    $message = "Estado del producto actualizado.";
 }
 
 // Acción: Eliminar producto
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     if ($db) {
-        $stmt = $db->prepare("DELETE FROM productos WHERE id = ?");
-        $stmt->execute([$id]);
-        $message = "Producto eliminado correctamente.";
+        try {
+            $stmt = $db->prepare("DELETE FROM productos WHERE id = ?");
+            $stmt->execute([$id]);
+        } catch (Throwable $e) {}
     }
+    deleteProductFromJson($id);
+    $message = "Producto eliminado correctamente.";
 }
 
 // Consultar métricas y listado de productos
@@ -49,34 +55,23 @@ if ($db) {
     } catch (Throwable $e) {
         $message = "⚠️ Las tablas aún no están creadas en la base de datos. Recuerda importar database.sql en phpMyAdmin.";
         $messageType = 'error';
-        $prods = getProducts();
-        $totalProducts = count($prods);
-        foreach ($prods as $p) {
-            $products[] = [
-                'id' => $p['id'],
-                'titulo' => $p['title'],
-                'categoria_nombre' => $p['categoryName'],
-                'precio' => $p['price'],
-                'badge' => $p['badge'],
-                'customizable' => $p['customizable'] ? 1 : 0,
-                'activo' => 1,
-                'imagen_principal' => $p['images'][0] ?? '../assets/img/logo.jpg'
-            ];
-        }
+        $db = null; // Activar fallback
     }
-} else {
+}
+
+if (!$db) {
     // Modo fallback con JSON
-    $prods = getProducts();
-    $totalProducts = count($prods);
-    foreach ($prods as $p) {
+    $allJson = getAllProductsFromJson();
+    $totalProducts = count($allJson);
+    foreach ($allJson as $p) {
         $products[] = [
             'id' => $p['id'],
             'titulo' => $p['title'],
-            'categoria_nombre' => $p['categoryName'],
+            'categoria_nombre' => $p['categoryName'] ?? 'General',
             'precio' => $p['price'],
-            'badge' => $p['badge'],
-            'customizable' => $p['customizable'] ? 1 : 0,
-            'activo' => 1,
+            'badge' => $p['badge'] ?? '',
+            'customizable' => !empty($p['customizable']) ? 1 : 0,
+            'activo' => isset($p['active']) ? ($p['active'] ? 1 : 0) : 1,
             'imagen_principal' => $p['images'][0] ?? '../assets/img/logo.jpg'
         ];
     }
@@ -131,6 +126,12 @@ if ($db) {
         <span>+ Agregar Nuevo Producto</span>
       </a>
     </div>
+
+    <?php if (!$db && empty($message)): ?>
+      <div class="alert-box" style="background: #FFFBEB; border-left: 4px solid #F59E0B; color: #92400E; margin-bottom: 1.25rem; font-size: 0.88rem; padding: 0.85rem 1.25rem; border-radius: var(--radius-sm);">
+        <span>💡 <strong>Modo Catálogo Local Activo:</strong> MySQL no está conectado actualmente. El panel está funcionando y guardando directamente sobre <code>data/products.json</code>.</span>
+      </div>
+    <?php endif; ?>
 
     <?php if (!empty($message)): ?>
       <div class="alert-box alert-<?php echo $messageType; ?>">

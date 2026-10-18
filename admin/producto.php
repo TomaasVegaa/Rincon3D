@@ -9,13 +9,10 @@ $isEditing = $productId > 0;
 $message = '';
 $messageType = 'success';
 
-// Cargar categorías disponibles
-$categories = [];
-if ($db) {
-    $categories = $db->query("SELECT * FROM categorias WHERE activo = 1 ORDER BY orden ASC")->fetchAll();
-}
+// Cargar categorías disponibles (desde MySQL o fallback por defecto)
+$categories = getCategories(false);
 
-// Datos iniciales
+// Datos iniciales por defecto
 $product = [
     'titulo' => '',
     'categoria_id' => $categories[0]['id'] ?? 1,
@@ -35,37 +32,84 @@ $product = [
     ]
 ];
 
-// Si estamos editando, cargar de MySQL
-if ($isEditing && $db) {
-    $stmt = $db->prepare("SELECT * FROM productos WHERE id = ?");
-    $stmt->execute([$productId]);
-    $existing = $stmt->fetch();
-    if ($existing) {
-        $product['titulo'] = $existing['titulo'];
-        $product['categoria_id'] = $existing['categoria_id'];
-        $product['precio'] = $existing['precio'];
-        $product['badge'] = $existing['badge'];
-        $product['customizable'] = $existing['customizable'];
-        $product['tiempo_produccion'] = $existing['tiempo_produccion'];
-        $product['descripcion'] = $existing['descripcion'];
-        $product['activo'] = $existing['activo'];
-        $product['destacado'] = $existing['destacado'];
+// Si estamos editando, cargar datos (primero desde MySQL, o desde JSON si MySQL no está disponible)
+if ($isEditing) {
+    $loaded = false;
 
-        // Imágenes
-        $stmtImgs = $db->prepare("SELECT id, url_imagen, es_principal FROM producto_imagenes WHERE producto_id = ? ORDER BY orden ASC");
-        $stmtImgs->execute([$productId]);
-        $product['imagenes'] = $stmtImgs->fetchAll();
+    if ($db) {
+        try {
+            $stmt = $db->prepare("SELECT * FROM productos WHERE id = ?");
+            $stmt->execute([$productId]);
+            $existing = $stmt->fetch();
+            if ($existing) {
+                $product['titulo'] = $existing['titulo'];
+                $product['categoria_id'] = $existing['categoria_id'];
+                $product['precio'] = $existing['precio'];
+                $product['badge'] = $existing['badge'];
+                $product['customizable'] = $existing['customizable'];
+                $product['tiempo_produccion'] = $existing['tiempo_produccion'];
+                $product['descripcion'] = $existing['descripcion'];
+                $product['activo'] = $existing['activo'];
+                $product['destacado'] = $existing['destacado'];
 
-        // Colores
-        $stmtCols = $db->prepare("SELECT nombre_color FROM producto_colores WHERE producto_id = ?");
-        $stmtCols->execute([$productId]);
-        $cols = $stmtCols->fetchAll(PDO::FETCH_COLUMN);
-        $product['colores_texto'] = implode(', ', $cols);
+                // Imágenes
+                $stmtImgs = $db->prepare("SELECT id, url_imagen, es_principal FROM producto_imagenes WHERE producto_id = ? ORDER BY orden ASC");
+                $stmtImgs->execute([$productId]);
+                $product['imagenes'] = $stmtImgs->fetchAll();
 
-        // Specs
-        $stmtSpecs = $db->prepare("SELECT clave, valor FROM producto_especificaciones WHERE producto_id = ?");
-        $stmtSpecs->execute([$productId]);
-        $product['specs'] = $stmtSpecs->fetchAll(PDO::FETCH_KEY_PAIR);
+                // Colores
+                $stmtCols = $db->prepare("SELECT nombre_color FROM producto_colores WHERE producto_id = ?");
+                $stmtCols->execute([$productId]);
+                $cols = $stmtCols->fetchAll(PDO::FETCH_COLUMN);
+                $product['colores_texto'] = implode(', ', $cols);
+
+                // Specs
+                $stmtSpecs = $db->prepare("SELECT clave, valor FROM producto_especificaciones WHERE producto_id = ?");
+                $stmtSpecs->execute([$productId]);
+                $product['specs'] = $stmtSpecs->fetchAll(PDO::FETCH_KEY_PAIR);
+                $loaded = true;
+            }
+        } catch (Throwable $e) {
+            error_log("Error cargando producto desde MySQL: " . $e->getMessage());
+        }
+    }
+
+    // Fallback: cargar desde data/products.json si no se cargó de MySQL
+    if (!$loaded) {
+        $jsonProducts = getAllProductsFromJson();
+        foreach ($jsonProducts as $jp) {
+            if ((int)$jp['id'] === $productId) {
+                $product['titulo'] = $jp['title'] ?? '';
+                $product['precio'] = $jp['price'] ?? '';
+                $product['badge'] = $jp['badge'] ?? '';
+                $product['customizable'] = !empty($jp['customizable']) ? 1 : 0;
+                $product['tiempo_produccion'] = $jp['specs']['Tiempo de fabricación'] ?? '24 a 48 hs';
+                $product['descripcion'] = $jp['description'] ?? '';
+                $product['activo'] = isset($jp['active']) ? ($jp['active'] ? 1 : 0) : 1;
+                $product['colores_texto'] = implode(', ', $jp['colors'] ?? []);
+                $product['specs'] = $jp['specs'] ?? [];
+
+                // Mapear categoría por slug
+                foreach ($categories as $cat) {
+                    if ($cat['slug'] === ($jp['category'] ?? '')) {
+                        $product['categoria_id'] = $cat['id'];
+                        break;
+                    }
+                }
+
+                // Mapear imágenes
+                $product['imagenes'] = [];
+                foreach (($jp['images'] ?? []) as $idx => $imgUrl) {
+                    $product['imagenes'][] = [
+                        'id' => $idx + 1,
+                        'url_imagen' => $imgUrl,
+                        'es_principal' => $idx === 0 ? 1 : 0
+                    ];
+                }
+                $loaded = true;
+                break;
+            }
+        }
     }
 }
 
@@ -87,98 +131,190 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($titulo) || $precio <= 0) {
         $message = "Por favor ingresa un título y un precio válido.";
         $messageType = "error";
-    } elseif ($db) {
-        try {
-            $db->beginTransaction();
-
-            if ($isEditing) {
-                $stmt = $db->prepare("UPDATE productos SET 
-                    categoria_id = ?, titulo = ?, slug = ?, descripcion = ?, precio = ?, badge = ?, customizable = ?, tiempo_produccion = ?, activo = ? 
-                    WHERE id = ?");
-                $stmt->execute([
-                    $categoriaId, $titulo, $slug, $descripcion, $precio, $badge, $customizable, $tiempoProd, $activo, $productId
-                ]);
-            } else {
-                $stmt = $db->prepare("INSERT INTO productos 
-                    (categoria_id, titulo, slug, descripcion, precio, badge, customizable, tiempo_produccion, activo, orden) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 99)");
-                $stmt->execute([
-                    $categoriaId, $titulo, $slug, $descripcion, $precio, $badge, $customizable, $tiempoProd, $activo
-                ]);
-                $productId = (int)$db->lastInsertId();
-                $isEditing = true;
+    } else {
+        // Encontrar datos de categoría
+        $catSlug = 'general';
+        $catNombre = 'General';
+        foreach ($categories as $c) {
+            if ((int)$c['id'] === $categoriaId) {
+                $catSlug = $c['slug'];
+                $catNombre = $c['nombre'];
+                break;
             }
+        }
 
-            // Manejo de nueva foto subida por archivo
-            if (!empty($_FILES['foto_archivo']['name'])) {
-                $ext = strtolower(pathinfo($_FILES['foto_archivo']['name'], PATHINFO_EXTENSION));
-                $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-                if (in_array($ext, $allowed)) {
-                    $newFilename = 'prod_' . $productId . '_' . time() . '.' . $ext;
-                    $targetPath = __DIR__ . '/../assets/img/' . $newFilename;
-                    if (move_uploaded_file($_FILES['foto_archivo']['tmp_name'], $targetPath)) {
-                        $urlImg = 'assets/img/' . $newFilename;
-                        $stmtImg = $db->prepare("INSERT INTO producto_imagenes (producto_id, url_imagen, orden, es_principal) VALUES (?, ?, 10, 0)");
-                        $stmtImg->execute([$productId, $urlImg]);
-                    }
+        // Colores procesados
+        $colArray = [];
+        if (!empty($coloresInput)) {
+            $colArray = array_values(array_filter(array_map('trim', explode(',', $coloresInput))));
+        }
+
+        // Specs procesadas
+        $specsProcessed = [];
+        $specKeys = $_POST['spec_key'] ?? [];
+        $specVals = $_POST['spec_val'] ?? [];
+        for ($i = 0; $i < count($specKeys); $i++) {
+            $k = trim($specKeys[$i] ?? '');
+            $v = trim($specVals[$i] ?? '');
+            if (!empty($k) && !empty($v)) {
+                $specsProcessed[$k] = $v;
+            }
+        }
+
+        // Procesar subida de foto por archivo
+        $uploadedImageUrls = [];
+        if (!empty($_FILES['foto_archivo']['name'])) {
+            $ext = strtolower(pathinfo($_FILES['foto_archivo']['name'], PATHINFO_EXTENSION));
+            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+            if (in_array($ext, $allowed)) {
+                $newFilename = 'prod_' . ($productId ?: time()) . '_' . time() . '.' . $ext;
+                $targetPath = __DIR__ . '/../assets/img/' . $newFilename;
+                if (move_uploaded_file($_FILES['foto_archivo']['tmp_name'], $targetPath)) {
+                    $uploadedImageUrls[] = 'assets/img/' . $newFilename;
                 }
             }
+        }
 
-            // Manejo de foto agregada por URL externa
-            $nuevaFotoUrl = trim($_POST['nueva_foto_url'] ?? '');
-            if (!empty($nuevaFotoUrl)) {
-                $stmtImg = $db->prepare("INSERT INTO producto_imagenes (producto_id, url_imagen, orden, es_principal) VALUES (?, ?, 10, 0)");
-                $stmtImg->execute([$productId, $nuevaFotoUrl]);
-            }
+        // Manejo de foto agregada por URL externa
+        $nuevaFotoUrl = trim($_POST['nueva_foto_url'] ?? '');
+        if (!empty($nuevaFotoUrl)) {
+            $uploadedImageUrls[] = $nuevaFotoUrl;
+        }
 
-            // Eliminar imagen seleccionada si se envió
-            if (!empty($_POST['eliminar_imagen_id'])) {
-                $delImgId = (int)$_POST['eliminar_imagen_id'];
-                $stmtDel = $db->prepare("DELETE FROM producto_imagenes WHERE id = ? AND producto_id = ?");
-                $stmtDel->execute([$delImgId, $productId]);
-            }
+        $delImgId = !empty($_POST['eliminar_imagen_id']) ? (int)$_POST['eliminar_imagen_id'] : 0;
 
-            // Actualizar colores
-            $db->prepare("DELETE FROM producto_colores WHERE producto_id = ?")->execute([$productId]);
-            if (!empty($coloresInput)) {
-                $colArray = array_map('trim', explode(',', $coloresInput));
+        // 1. INTENTAR GUARDAR EN MYSQL (Si está disponible)
+        $savedInDb = false;
+        if ($db) {
+            try {
+                $db->beginTransaction();
+
+                if ($isEditing) {
+                    $stmt = $db->prepare("UPDATE productos SET 
+                        categoria_id = ?, titulo = ?, slug = ?, descripcion = ?, precio = ?, badge = ?, customizable = ?, tiempo_produccion = ?, activo = ? 
+                        WHERE id = ?");
+                    $stmt->execute([
+                        $categoriaId, $titulo, $slug, $descripcion, $precio, $badge, $customizable, $tiempoProd, $activo, $productId
+                    ]);
+                } else {
+                    $stmt = $db->prepare("INSERT INTO productos 
+                        (categoria_id, titulo, slug, descripcion, precio, badge, customizable, tiempo_produccion, activo, orden) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 99)");
+                    $stmt->execute([
+                        $categoriaId, $titulo, $slug, $descripcion, $precio, $badge, $customizable, $tiempoProd, $activo
+                    ]);
+                    $productId = (int)$db->lastInsertId();
+                    $isEditing = true;
+                }
+
+                // Insertar nuevas fotos en MySQL
+                foreach ($uploadedImageUrls as $uImg) {
+                    $stmtImg = $db->prepare("INSERT INTO producto_imagenes (producto_id, url_imagen, orden, es_principal) VALUES (?, ?, 10, 0)");
+                    $stmtImg->execute([$productId, $uImg]);
+                }
+
+                // Eliminar foto en MySQL si se solicitó
+                if ($delImgId > 0) {
+                    $stmtDel = $db->prepare("DELETE FROM producto_imagenes WHERE id = ? AND producto_id = ?");
+                    $stmtDel->execute([$delImgId, $productId]);
+                }
+
+                // Actualizar colores en MySQL
+                $db->prepare("DELETE FROM producto_colores WHERE producto_id = ?")->execute([$productId]);
                 $stmtCol = $db->prepare("INSERT INTO producto_colores (producto_id, nombre_color) VALUES (?, ?)");
                 foreach ($colArray as $col) {
-                    if (!empty($col)) {
-                        $stmtCol->execute([$productId, $col]);
-                    }
+                    $stmtCol->execute([$productId, $col]);
                 }
-            }
 
-            // Actualizar especificaciones
-            $db->prepare("DELETE FROM producto_especificaciones WHERE producto_id = ?")->execute([$productId]);
-            $specKeys = $_POST['spec_key'] ?? [];
-            $specVals = $_POST['spec_val'] ?? [];
-            $stmtSpec = $db->prepare("INSERT INTO producto_especificaciones (producto_id, clave, valor) VALUES (?, ?, ?)");
-            for ($i = 0; $i < count($specKeys); $i++) {
-                $k = trim($specKeys[$i]);
-                $v = trim($specVals[$i] ?? '');
-                if (!empty($k) && !empty($v)) {
+                // Actualizar especificaciones en MySQL
+                $db->prepare("DELETE FROM producto_especificaciones WHERE producto_id = ?")->execute([$productId]);
+                $stmtSpec = $db->prepare("INSERT INTO producto_especificaciones (producto_id, clave, valor) VALUES (?, ?, ?)");
+                foreach ($specsProcessed as $k => $v) {
                     $stmtSpec->execute([$productId, $k, $v]);
                 }
+
+                $db->commit();
+                $savedInDb = true;
+            } catch (Throwable $e) {
+                if ($db->inTransaction()) $db->rollBack();
+                error_log("Error guardando en MySQL: " . $e->getMessage());
             }
-
-            $db->commit();
-            $message = "¡Producto guardado exitosamente!";
-
-            // Recargar datos
-            header("Location: producto.php?id=" . $productId . "&saved=1");
-            exit;
-        } catch (Exception $e) {
-            if ($db->inTransaction()) $db->rollBack();
-            $message = "Error guardando: " . $e->getMessage();
-            $messageType = "error";
         }
+
+        // 2. SINCRONIZAR SIEMPRE A data/products.json (Garantiza guardado aunque la BD no esté conectada)
+        $currentImgs = [];
+        if ($isEditing) {
+            $existingProds = getAllProductsFromJson();
+            foreach ($existingProds as $ep) {
+                if ((int)$ep['id'] === $productId) {
+                    $currentImgs = $ep['images'] ?? [];
+                    break;
+                }
+            }
+        }
+        if (empty($currentImgs) && !empty($product['imagenes'])) {
+            foreach ($product['imagenes'] as $pim) {
+                $currentImgs[] = $pim['url_imagen'];
+            }
+        }
+
+        // Eliminar foto si se solicitó
+        if ($delImgId > 0 && !empty($currentImgs)) {
+            $delIndex = $delImgId - 1;
+            if (isset($currentImgs[$delIndex])) {
+                unset($currentImgs[$delIndex]);
+                $currentImgs = array_values($currentImgs);
+            }
+        }
+
+        // Agregar fotos nuevas
+        foreach ($uploadedImageUrls as $uImg) {
+            $currentImgs[] = $uImg;
+        }
+        if (empty($currentImgs)) {
+            $currentImgs = ['assets/img/logo.jpg'];
+        }
+
+        // Si no había productId asignado aún
+        if ($productId <= 0) {
+            $allP = getAllProductsFromJson();
+            $maxId = 0;
+            foreach ($allP as $ap) {
+                if ((int)$ap['id'] > $maxId) $maxId = (int)$ap['id'];
+            }
+            $productId = $maxId + 1;
+        }
+
+        $jsonData = [
+            'id' => $productId,
+            'title' => $titulo,
+            'category' => $catSlug,
+            'categoryName' => $catNombre,
+            'price' => $precio,
+            'badge' => $badge,
+            'customizable' => (bool)$customizable,
+            'description' => $descripcion,
+            'images' => $currentImgs,
+            'colors' => $colArray,
+            'specs' => $specsProcessed,
+            'active' => (bool)$activo
+        ];
+
+        syncProductToJson($jsonData);
+
+        $storageParam = $savedInDb ? 'mysql' : 'json';
+        header("Location: producto.php?id=" . $productId . "&saved=1&storage=" . $storageParam);
+        exit;
     }
 }
 
 if (isset($_GET['saved'])) {
-    $message = "¡Producto guardado exitosamente!";
+    if (isset($_GET['storage']) && $_GET['storage'] === 'json') {
+        $message = "✨ ¡Producto guardado exitosamente en el catálogo! (Sincronizado con data/products.json).";
+    } else {
+        $message = "✨ ¡Producto guardado exitosamente en la base de datos MySQL y catálogo!";
+    }
+    $messageType = "success";
 }
 ?>
 <!DOCTYPE html>
@@ -228,6 +364,12 @@ if (isset($_GET['saved'])) {
       </div>
     </div>
 
+    <?php if (!$db): ?>
+      <div class="alert-box" style="background: #FFFBEB; border-left: 4px solid #F59E0B; color: #92400E; margin-bottom: 1.25rem; font-size: 0.88rem; padding: 0.85rem 1.25rem; border-radius: var(--radius-sm);">
+        <span>💡 <strong>Modo Catálogo Local:</strong> La base de datos MySQL no está conectada en este momento. Los cambios que realices se guardarán y verán de inmediato en la tienda a través del catálogo local (<code>data/products.json</code>).</span>
+      </div>
+    <?php endif; ?>
+
     <?php if (!empty($message)): ?>
       <div class="alert-box alert-<?php echo $messageType; ?>">
         <span><?php echo htmlspecialchars($message); ?></span>
@@ -235,6 +377,7 @@ if (isset($_GET['saved'])) {
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data" class="form-card" style="max-width: 900px;">
+      <input type="hidden" name="product_id" value="<?php echo $productId; ?>">
       
       <div class="form-grid">
         <div class="form-group full-width">
