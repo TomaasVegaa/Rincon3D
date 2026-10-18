@@ -57,6 +57,14 @@ header('Content-Type: text/html; charset=utf-8');
                 echo '<div class="item warn">⚠️ La base de datos está conectada pero NO TIENE TABLAS todavía.<br><strong>Solución:</strong> En phpMyAdmin haz clic en "Importar" y sube el archivo <code>database.sql</code>.</div>';
             } else {
                 echo '<div class="item ok">✓ Tablas encontradas (' . count($tables) . '): ' . implode(', ', $tables) . '</div>';
+
+                // Mostrar productos de la base de datos
+                require_once __DIR__ . '/config.php';
+                $dbProds = $db->query("SELECT id, titulo, categoria_id, precio, activo FROM productos ORDER BY id ASC LIMIT 5")->fetchAll();
+                echo '<div class="item ok"><strong>Productos en DB:</strong><pre>' . htmlspecialchars(print_r($dbProds, true)) . '</pre></div>';
+                
+                $prodsFromFunc = getProducts();
+                echo '<div class="item ok"><strong>Productos desde getProducts():</strong><pre>' . htmlspecialchars(print_r(array_slice($prodsFromFunc, 0, 3), true)) . '</pre></div>';
             }
         } catch (Throwable $e) {
             echo '<div class="item err">✗ Error consultando tablas: ' . htmlspecialchars($e->getMessage()) . '</div>';
