@@ -1,0 +1,499 @@
+/* ==========================================================================
+   RINCÓN 3D - ESTILOS DEL PANEL DE ADMINISTRACIÓN
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --admin-wine: #651226;
+  --admin-wine-dark: #450A16;
+  --admin-wine-hover: #7E1831;
+  --admin-blush: #F5E5E5;
+  --admin-blush-border: #E8CFD1;
+  --admin-bg: #F8F5F5;
+  --admin-surface: #FFFFFF;
+  --admin-text: #2A171A;
+  --admin-muted: #786066;
+  --admin-success: #1E7E4E;
+  --admin-success-bg: #EAF7EE;
+  --admin-warning: #B45309;
+  --admin-warning-bg: #FEF3C7;
+  --admin-danger: #DC2626;
+  --admin-danger-bg: #FEE2E2;
+
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   PANTALLA DE LOGIN
+   ========================================================================== */
+.login-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--admin-blush) 0%, #FFFFFF 50%, #FAF0F0 100%);
+}
+
+.login-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-blush-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(101, 18, 38, 0.12);
+  width: 100%;
+  max-width: 420px;
+  padding: 2.25rem;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  margin: 0 auto 0.75rem;
+  box-shadow: 0 4px 12px rgba(101, 18, 38, 0.15);
+}
+
+.login-title {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  color: var(--admin-wine);
+  font-weight: 700;
+}
+
+.login-subtitle {
+  font-size: 0.85rem;
+  color: var(--admin-muted);
+}
+
+.login-hint {
+  margin-top: 1.25rem;
+  padding: 0.75rem;
+  background: var(--admin-bg);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--admin-muted);
+}
+
+.login-hint code {
+  font-weight: 700;
+  color: var(--admin-wine);
+  display: block;
+  margin-top: 2px;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--admin-wine);
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   LAYOUT DEL PANEL (HEADER & NAV)
+   ========================================================================== */
+.admin-navbar {
+  background: var(--admin-wine);
+  color: #FFFFFF;
+  padding: 0.85rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.admin-nav-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+}
+
+.admin-brand-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.admin-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-nav-link {
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  transition: all 0.2s;
+}
+
+.admin-nav-link:hover, .admin-nav-link.active {
+  background: rgba(255,255,255,0.18);
+  color: #FFFFFF;
+}
+
+.admin-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.store-preview-btn {
+  background: rgba(255,255,255,0.15);
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.store-preview-btn:hover {
+  background: #FFFFFF;
+  color: var(--admin-wine);
+}
+
+.logout-btn {
+  color: #FFB3BA;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.logout-btn:hover {
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   CONTENIDO PRINCIPAL
+   ========================================================================== */
+.admin-main {
+  max-width: 1240px;
+  margin: 2rem auto;
+  padding: 0 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  color: var(--admin-wine-dark);
+}
+
+.page-desc {
+  font-size: 0.875rem;
+  color: var(--admin-muted);
+}
+
+/* Tarjetas KPI */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-blush-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(101, 18, 38, 0.04);
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  letter-spacing: 0.05em;
+}
+
+.kpi-val {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--admin-wine);
+  margin-top: 0.25rem;
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--admin-wine);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background: var(--admin-wine-hover);
+}
+
+.btn-secondary {
+  background: var(--admin-blush);
+  color: var(--admin-wine);
+  border: 1px solid var(--admin-blush-border);
+}
+
+.btn-secondary:hover {
+  background: #E8CFD1;
+}
+
+.btn-danger {
+  background: var(--admin-danger);
+  color: #FFFFFF;
+}
+
+.btn-danger:hover {
+  background: #B91C1C;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.775rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Tablas */
+.card-table-wrapper {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-blush-border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.04);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.admin-table th {
+  background: var(--admin-bg);
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  color: var(--admin-wine-dark);
+  border-bottom: 1px solid var(--admin-blush-border);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.admin-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--admin-blush-border);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background-color: #FAF4F4;
+}
+
+.table-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--admin-blush-border);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background: var(--admin-success-bg);
+  color: var(--admin-success);
+}
+
+.badge-warning {
+  background: var(--admin-warning-bg);
+  color: var(--admin-warning);
+}
+
+.badge-wine {
+  background: var(--admin-wine);
+  color: #FFFFFF;
+}
+
+.badge-muted {
+  background: #E5E7EB;
+  color: #4B5563;
+}
+
+/* Formularios */
+.form-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-blush-border);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.04);
+  max-width: 800px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--admin-text);
+}
+
+.form-control {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--admin-blush-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.875rem;
+  background: #FFFFFF;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--admin-wine);
+  box-shadow: 0 0 0 3px rgba(101, 18, 38, 0.1);
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.form-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--admin-wine);
+  cursor: pointer;
+}
+
+/* Alertas */
+.alert-box {
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alert-success {
+  background: var(--admin-success-bg);
+  color: var(--admin-success);
+  border: 1px solid #A7F3D0;
+}
+
+.alert-error {
+  background: var(--admin-danger-bg);
+  color: var(--admin-danger);
+  border: 1px solid #FECACA;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

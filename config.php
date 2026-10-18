@@ -1,0 +1,174 @@
+<?php
+/**
+ * =============================================================================
+ * CONFIGURACIÓN GENERAL - RINCÓN 3D
+ * Conexión a Base de Datos y Valores en Vivo
+ * =============================================================================
+ */
+
+require_once __DIR__ . '/db.php';
+
+// Valores por defecto (fallback en caso de no conectar a BD)
+$defaults = [
+    'store_name' => 'Rincón 3D',
+    'store_tagline' => 'Impresiones 3D & Diseños Personalizados',
+    'whatsapp_phone' => '5491122334455',
+    'currency_symbol' => '$',
+    'shipping_cost' => 3500,
+    'free_shipping_threshold' => 35000,
+    'bank_alias' => 'RINCON.3D.MP',
+    'bank_cbu' => '0000003100085469213456',
+    'bank_holder' => 'Elisa - Rincón 3D',
+    'bank_discount_percent' => 10,
+    'banner_visible' => 1,
+    'banner_title' => 'Arte, diseño y tecnología en cada rincón',
+    'banner_description' => 'Fabricamos piezas únicas con filamentos biodegradables de primera calidad. Desde recuerdos personalizados en litofanía y mates térmicos hasta iluminación ambiental y decoración.'
+];
+
+// Cargar configuración desde la Base de Datos si está disponible
+$db = getDB();
+if ($db) {
+    try {
+        $stmt = $db->query("SELECT clave, valor FROM configuracion");
+        while ($row = $stmt->fetch()) {
+            $key = $row['clave'];
+            $val = $row['valor'];
+            if (isset($defaults[$key])) {
+                $defaults[$key] = is_numeric($defaults[$key]) ? (float)$val : $val;
+            }
+        }
+    } catch (Throwable $e) {
+        error_log("Error cargando configuracion desde DB: " . $e->getMessage());
+    }
+}
+
+// Definición de constantes seguras para su uso en toda la aplicación
+if (!defined('STORE_NAME')) define('STORE_NAME', $defaults['store_name']);
+if (!defined('STORE_TAGLINE')) define('STORE_TAGLINE', $defaults['store_tagline']);
+if (!defined('WHATSAPP_PHONE')) define('WHATSAPP_PHONE', $defaults['whatsapp_phone']);
+if (!defined('CURRENCY_SYMBOL')) define('CURRENCY_SYMBOL', $defaults['currency_symbol']);
+if (!defined('SHIPPING_COST_DEFAULT')) define('SHIPPING_COST_DEFAULT', (float)$defaults['shipping_cost']);
+if (!defined('FREE_SHIPPING_THRESHOLD')) define('FREE_SHIPPING_THRESHOLD', (float)$defaults['free_shipping_threshold']);
+if (!defined('BANK_ALIAS')) define('BANK_ALIAS', $defaults['bank_alias']);
+if (!defined('BANK_CBU')) define('BANK_CBU', $defaults['bank_cbu']);
+if (!defined('BANK_HOLDER')) define('BANK_HOLDER', $defaults['bank_holder']);
+if (!defined('BANK_DISCOUNT_PERCENT')) define('BANK_DISCOUNT_PERCENT', (float)$defaults['bank_discount_percent']);
+if (!defined('BANNER_VISIBLE')) define('BANNER_VISIBLE', (int)$defaults['banner_visible']);
+if (!defined('BANNER_TITLE')) define('BANNER_TITLE', $defaults['banner_title']);
+if (!defined('BANNER_DESCRIPTION')) define('BANNER_DESCRIPTION', $defaults['banner_description']);
+
+/**
+ * Obtiene los productos activos desde MySQL con sus imágenes, colores y especificaciones.
+ * Si la BD no está disponible, lee automáticamente data/products.json como respaldo.
+ */
+function getProducts() {
+    $db = getDB();
+    if ($db) {
+        try {
+            // 1. Obtener productos activos
+            $sql = "SELECT p.*, c.slug AS cat_slug, c.nombre AS cat_nombre
+                    FROM productos p
+                    LEFT JOIN categorias c ON p.categoria_id = c.id
+                    WHERE p.activo = 1
+                    ORDER BY p.orden ASC, p.id DESC";
+            $stmt = $db->query($sql);
+            $rows = $stmt->fetchAll();
+
+            if (!empty($rows)) {
+                $productIds = array_column($rows, 'id');
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+
+                // 2. Obtener imágenes
+                $stmtImgs = $db->prepare("SELECT producto_id, url_imagen, es_principal 
+                                          FROM producto_imagenes 
+                                          WHERE producto_id IN ($placeholders) 
+                                          ORDER BY orden ASC");
+                $stmtImgs->execute($productIds);
+                $imagesByProduct = [];
+                while ($img = $stmtImgs->fetch()) {
+                    $imagesByProduct[$img['producto_id']][] = $img['url_imagen'];
+                }
+
+                // 3. Obtener colores
+                $stmtCols = $db->prepare("SELECT producto_id, nombre_color 
+                                          FROM producto_colores 
+                                          WHERE producto_id IN ($placeholders)");
+                $stmtCols->execute($productIds);
+                $colorsByProduct = [];
+                while ($col = $stmtCols->fetch()) {
+                    $colorsByProduct[$col['producto_id']][] = $col['nombre_color'];
+                }
+
+                // 4. Obtener especificaciones
+                $stmtSpecs = $db->prepare("SELECT producto_id, clave, valor 
+                                           FROM producto_especificaciones 
+                                           WHERE producto_id IN ($placeholders)");
+                $stmtSpecs->execute($productIds);
+                $specsByProduct = [];
+                while ($sp = $stmtSpecs->fetch()) {
+                    $specsByProduct[$sp['producto_id']][$sp['clave']] = $sp['valor'];
+                }
+
+                // Armar estructura uniforme
+                $products = [];
+                foreach ($rows as $r) {
+                    $pid = (int)$r['id'];
+                    $imgs = $imagesByProduct[$pid] ?? ['assets/img/logo.jpg'];
+                    $cols = $colorsByProduct[$pid] ?? [];
+                    $specs = $specsByProduct[$pid] ?? [];
+
+                    $products[] = [
+                        'id' => $pid,
+                        'title' => $r['titulo'],
+                        'category' => $r['cat_slug'] ?: 'general',
+                        'categoryName' => $r['cat_nombre'] ?: 'General',
+                        'price' => (float)$r['precio'],
+                        'badge' => $r['badge'],
+                        'customizable' => (bool)$r['customizable'],
+                        'description' => $r['descripcion'],
+                        'images' => $imgs,
+                        'colors' => $cols,
+                        'specs' => $specs
+                    ];
+                }
+                return $products;
+            }
+        } catch (Throwable $e) {
+            error_log("Error consultando productos de MySQL: " . $e->getMessage());
+        }
+    }
+
+    // Respaldo desde JSON si no hay BD o falló
+    $jsonPath = __DIR__ . '/data/products.json';
+    if (file_exists($jsonPath)) {
+        $content = file_get_contents($jsonPath);
+        return json_decode($content, true) ?: [];
+    }
+
+    return [];
+}
+
+/**
+ * Obtiene las categorías activas desde MySQL
+ */
+function getCategories($onlyActive = true) {
+    $db = getDB();
+    if ($db) {
+        try {
+            $where = $onlyActive ? "WHERE activo = 1" : "";
+            $stmt = $db->query("SELECT * FROM categorias $where ORDER BY orden ASC, id ASC");
+            return $stmt->fetchAll() ?: [];
+        } catch (Throwable $e) {
+            error_log("Error consultando categorías de MySQL: " . $e->getMessage());
+        }
+    }
+
+    // Categorías por defecto si la base de datos no está disponible
+    return [
+        ['id' => 1, 'slug' => 'iluminacion', 'nombre' => 'Iluminación & Lámparas', 'icono' => '💡', 'orden' => 1, 'activo' => 1],
+        ['id' => 2, 'slug' => 'mates', 'nombre' => 'Mates & Bazar', 'icono' => '🧉', 'orden' => 2, 'activo' => 1],
+        ['id' => 3, 'slug' => 'decoracion', 'nombre' => 'Decoración & Plantas', 'icono' => '🪴', 'orden' => 3, 'activo' => 1],
+        ['id' => 4, 'slug' => 'organizacion', 'nombre' => 'Organización & Oficina', 'icono' => '📦', 'orden' => 4, 'activo' => 1],
+        ['id' => 5, 'slug' => 'figuras', 'nombre' => 'Figuras & Coleccionables', 'icono' => '🐉', 'orden' => 5, 'activo' => 1]
+    ];
+}

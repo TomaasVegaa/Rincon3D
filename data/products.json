@@ -1,0 +1,181 @@
+[
+  {
+    "id": 1,
+    "title": "Lámpara Litofanía Lunar Personalizada",
+    "category": "iluminacion",
+    "categoryName": "Iluminación & Lámparas",
+    "price": 18500,
+    "badge": "Más Vendido",
+    "customizable": true,
+    "description": "Lámpara cilíndrica impresa en 3D con tecnología de litofanía de alta precisión sobre base de madera lustrada. Al encenderse, proyecta con calidez tus fotografías familiares o momentos favoritos con increíble relieve. Incluye luz LED cálida de bajo consumo y conexión USB.",
+    "images": [
+      "assets/img/lamp_litofania_1.jpg",
+      "assets/img/lamp_litofania_2.jpg"
+    ],
+    "colors": [
+      "Blanco Cálido Litofánico",
+      "Marfil Clásico",
+      "Rosa Suave Difuso"
+    ],
+    "specs": {
+      "Material": "PLA Premium Biodegradable translúcido",
+      "Dimensiones": "18 cm de alto × 10 cm de diámetro",
+      "Base": "Madera natural con acabado ecológico",
+      "Iluminación": "Módulo LED cálido USB con interruptor",
+      "Tiempo de fabricación": "48 a 72 horas hábiles"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Mate Geométrico Facetado 3D con Bombilla",
+    "category": "mates",
+    "categoryName": "Mates & Bazar",
+    "price": 9200,
+    "badge": "Exclusivo",
+    "customizable": true,
+    "description": "Mate con diseño poligonal facetado moderno y textura agradable al tacto. Incluye vaso interior térmico de polímero apto alimentos (BPA Free), no transmite calor a las manos y es sumamente fácil de limpiar con el método sacayerba. Incluye bombilla de acero inoxidable a tono.",
+    "images": [
+      "assets/img/mate_geometrico_1.jpg",
+      "assets/img/mate_geometrico_2.jpg"
+    ],
+    "colors": [
+      "Borgoña Rincón 3D",
+      "Rosa Empolvado",
+      "Negro Satinado",
+      "Oro Rosa Seda"
+    ],
+    "specs": {
+      "Material exterior": "PLA de alta resistencia con estrías poligonales",
+      "Vaso interior": "Polímero térmico removible libre de BPA",
+      "Accesorios": "Bombilla metálica con resorte desarmable",
+      "Capacidad": "40 g de yerba mate",
+      "Mantenimiento": "Apto lavado con agua tibia"
+    }
+  },
+  {
+    "id": 3,
+    "title": "Maceta Origami Geométrica con Drenaje",
+    "category": "decoracion",
+    "categoryName": "Decoración & Plantas",
+    "price": 6800,
+    "badge": "Tendencia",
+    "customizable": false,
+    "description": "Maceta decorativa inspirada en el plegado de papel origami para suculentas, cactus o plantas de interior. Cuenta con plato recolector de agua oculto integrado y orificio de drenaje para mantener las raíces oxigenadas sin manchar superficies.",
+    "images": [
+      "assets/img/maceta_origami_1.jpg",
+      "assets/img/maceta_origami_2.jpg"
+    ],
+    "colors": [
+      "Blanco Mármol",
+      "Rosa Pastel",
+      "Verde Salvia",
+      "Borgoña Mate"
+    ],
+    "specs": {
+      "Material": "PLA ecológico no tóxico",
+      "Dimensiones": "12 cm de alto × 13 cm de boca",
+      "Sistema de riego": "Platillo recolector desmontable invisible",
+      "Acabado": "Superficie facetada mate de bajo brillo"
+    }
+  },
+  {
+    "id": 4,
+    "title": "Lámpara Espiral Vortex Iluminación Cálida",
+    "category": "iluminacion",
+    "categoryName": "Iluminación & Lámparas",
+    "price": 16400,
+    "badge": "Edición Especial",
+    "customizable": false,
+    "description": "Lámpara de diseño paramétrico con curvas fluidas en espiral que tamizan la luz de manera hipnótica. Perfecta para mesas de luz, rincones de lectura o living. Aporta calidez y un punto focal contemporáneo a cualquier ambiente.",
+    "images": [
+      "assets/img/lampara_vortex_1.jpg",
+      "assets/img/lampara_vortex_2.jpg"
+    ],
+    "colors": [
+      "Borgoña Rincón 3D",
+      "Rosa Nude Cálido",
+      "Blanco Translúcido"
+    ],
+    "specs": {
+      "Material": "PLA translúcido de grado óptico",
+      "Dimensiones": "22 cm de altura × 12 cm de diámetro",
+      "Portalámparas": "Rosca universal E27 con lámpara LED cálida incluida",
+      "Cable": "1.5 metros con interruptor de mano"
+    }
+  },
+  {
+    "id": 5,
+    "title": "Organizador Modular Hexagonal de Escritorio",
+    "category": "organizacion",
+    "categoryName": "Organización & Oficina",
+    "price": 8900,
+    "badge": "Práctico",
+    "customizable": true,
+    "description": "Set modular de 3 piezas hexagonales combinables: cubículo alto para lapiceras y pinceles, cubículo medio con soporte para smartphone y ranura para notas, y bandeja baja para clips o pendrives. Mantén tu espacio ordenado con distinción.",
+    "images": [
+      "assets/img/organizador_hex_1.jpg",
+      "assets/img/organizador_hex_2.jpg"
+    ],
+    "colors": [
+      "Dúo Borgoña & Rosa",
+      "Blanco Seda",
+      "Gris Grafito Minimal"
+    ],
+    "specs": {
+      "Módulos": "3 bloques hexagonales independientes",
+      "Material": "PLA reforzado con terminación satinada",
+      "Base": "Gomas protectoras para no rayar el escritorio",
+      "Ranura celular": "Apta para teléfonos con funda"
+    }
+  },
+  {
+    "id": 6,
+    "title": "Dragón Articulado Cristal Fidget de Colección",
+    "category": "figuras",
+    "categoryName": "Figuras & Coleccionables",
+    "price": 11500,
+    "badge": "Coleccionable",
+    "customizable": false,
+    "description": "Espectacular dragón articulado impreso en una sola pieza continua mediante técnica Print-in-Place. Cada una de sus escamas y vértebras tiene movimiento fluido y satisfactorio. Ideal como objeto antiestrés, elemento de colección o regalo inolvidable.",
+    "images": [
+      "assets/img/figura_dragon_1.jpg",
+      "assets/img/figura_dragon_2.jpg"
+    ],
+    "colors": [
+      "Seda Borgoña & Cobre",
+      "Seda Rosa & Dorado",
+      "Negro Obsidiana"
+    ],
+    "specs": {
+      "Largo total": "45 cm desplegado",
+      "Articulación": "Más de 30 segmentos móviles",
+      "Material": "PLA Silk con reflejos tornasolados",
+      "Acabado": "Brillo sedoso sin pintura (color propio del filamento)"
+    }
+  },
+  {
+    "id": 7,
+    "title": "Soporte Gamer Escultórico para Auriculares",
+    "category": "organizacion",
+    "categoryName": "Organización & Oficina",
+    "price": 12800,
+    "badge": "Setup Pro",
+    "customizable": true,
+    "description": "Soporte ergonómico con curvas estilizadas que cuida la diadema y almohadillas de tus auriculares sin marcarlos. Posee una base sólida y canal posterior para enrollar el cable sobrante. Aporta orden y sofisticación a tu estación de trabajo o juegos.",
+    "images": [
+      "assets/img/soporte_auricular_1.jpg",
+      "assets/img/soporte_auricular_2.jpg"
+    ],
+    "colors": [
+      "Borgoña Rincón 3D",
+      "Negro Mate",
+      "Blanco Puro"
+    ],
+    "specs": {
+      "Altura": "26 cm",
+      "Estructura": "Relleno giroidal de alta resistencia",
+      "Compatibilidad": "Auriculares de diadema de cualquier marca",
+      "Base": "Lastre interno de estabilidad y topes de silicona"
+    }
+  }
+]

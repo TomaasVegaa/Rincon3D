@@ -1,0 +1,20 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs y temporales
+*.log
+error_log
+*.tmp
+*.bak
+
+# Entorno de agentes
+.gemini/
+.agents/

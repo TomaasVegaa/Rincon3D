@@ -1,0 +1,19 @@
+# =============================================================================
+# ROBOTS.TXT - RINCÓN 3D
+# Control de rastreo e indexación para Googlebot y otros buscadores
+# =============================================================================
+
+User-agent: *
+Allow: /
+Allow: /assets/css/
+Allow: /assets/js/
+Allow: /assets/img/
+
+# Proteger áreas administrativas y APIs privadas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /data/
+Disallow: /check.php
+
+# Mapa del sitio dinámico generado automáticamente
+Sitemap: https://rincon3d.ct.ws/sitemap.xml

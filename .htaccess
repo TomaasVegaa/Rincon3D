@@ -1,0 +1,76 @@
+# =============================================================================
+# .HTACCESS - CONFIGURACIÓN DE RENDIMIENTO Y SEO (HOSTINGER & APACHE)
+# =============================================================================
+
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Sitemap Dinámico XML
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+  # 2. URLs amigables de Productos (SEO)
+  # Ejemplo: tudominio.com/producto/lampara-litofania-lunar-personalizada
+  RewriteRule ^producto/([a-zA-Z0-9_-]+)/?$ producto.php?slug=$1 [L,QSA]
+
+  # 3. Categorías amigables (SEO)
+  # Ejemplo: tudominio.com/categoria/iluminacion
+  RewriteRule ^categoria/([a-zA-Z0-9_-]+)/?$ index.php?categoria=$1 [L,QSA]
+</IfModule>
+
+# =============================================================================
+# SEGURIDAD: Proteger archivos sensibles
+# =============================================================================
+<FilesMatch "\.(sql|json|md|log|sh|env)$">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+# Permitir específicamente el manifest si existiera
+<Files "robots.txt">
+  Allow from all
+</Files>
+
+# =============================================================================
+# COMPRESIÓN GZIP (Acelera la carga y mejora el puntaje de Google Core Web Vitals)
+# =============================================================================
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json
+  AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# =============================================================================
+# CACHÉ DE NAVEGADOR (Mejora la velocidad de retorno)
+# =============================================================================
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+
+  # Imágenes y multimedia
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+
+  # Estilos CSS y Scripts JS
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+
+  # Fuentes web
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+</IfModule>
+
+# Cabeceras de seguridad básicas
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
