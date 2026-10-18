@@ -1,4 +1,9 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+
 ini_set('display_errors', 0);
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
@@ -58,7 +63,7 @@ $categories = getCategories();
   <script>
     window.APP_CONFIG = {
       whatsappPhone: "<?php echo WHATSAPP_PHONE; ?>",
-      currencySymbol: "<?php echo CURRENCY_SYMBOL; ?>",
+      currencySymbol: "<?php echo APP_CURRENCY; ?>",
       shippingCost: <?php echo SHIPPING_COST_DEFAULT; ?>,
       freeShippingThreshold: <?php echo FREE_SHIPPING_THRESHOLD; ?>,
       bankDiscountPercent: <?php echo BANK_DISCOUNT_PERCENT; ?>

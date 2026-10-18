@@ -58,7 +58,9 @@ if (!$settingsLoaded) {
 if (!defined('STORE_NAME')) define('STORE_NAME', $defaults['store_name']);
 if (!defined('STORE_TAGLINE')) define('STORE_TAGLINE', $defaults['store_tagline']);
 if (!defined('WHATSAPP_PHONE')) define('WHATSAPP_PHONE', $defaults['whatsapp_phone']);
-if (!defined('CURRENCY_SYMBOL')) define('CURRENCY_SYMBOL', $defaults['currency_symbol']);
+$currencyClean = (!empty($defaults['currency_symbol']) && !is_numeric($defaults['currency_symbol'])) ? $defaults['currency_symbol'] : '$';
+if (!defined('APP_CURRENCY')) define('APP_CURRENCY', $currencyClean);
+if (!defined('CURRENCY_SYMBOL')) define('CURRENCY_SYMBOL', $currencyClean);
 if (!defined('SHIPPING_COST_DEFAULT')) define('SHIPPING_COST_DEFAULT', (float)$defaults['shipping_cost']);
 if (!defined('FREE_SHIPPING_THRESHOLD')) define('FREE_SHIPPING_THRESHOLD', (float)$defaults['free_shipping_threshold']);
 if (!defined('BANK_ALIAS')) define('BANK_ALIAS', $defaults['bank_alias']);
@@ -98,7 +100,17 @@ function getProducts() {
                 $stmtImgs->execute($productIds);
                 $imagesByProduct = [];
                 while ($img = $stmtImgs->fetch()) {
-                    $imagesByProduct[$img['producto_id']][] = $img['url_imagen'];
+                    $u = $img['url_imagen'];
+                    // Si el archivo en disco no existe (por ejemplo borrado o movido), usar imagen válida
+                    $localPath = __DIR__ . '/' . $u;
+                    if (strpos($u, 'assets/') === 0 && !file_exists($localPath)) {
+                        if ($img['producto_id'] == 1 && file_exists(__DIR__ . '/assets/img/florero_japandei_1.jpg')) {
+                            $u = 'assets/img/florero_japandei_1.jpg';
+                        } elseif ($img['producto_id'] == 2 && file_exists(__DIR__ . '/assets/img/florero_japandi_1.jpg')) {
+                            $u = 'assets/img/florero_japandi_1.jpg';
+                        }
+                    }
+                    $imagesByProduct[$img['producto_id']][] = $u;
                 }
 
                 // 3. Obtener colores

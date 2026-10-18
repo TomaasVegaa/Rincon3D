@@ -151,7 +151,7 @@ if (!$db) {
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Ventas Registradas</div>
-        <div class="kpi-val"><?php echo CURRENCY_SYMBOL . number_format($totalSales, 0, ',', '.'); ?></div>
+        <div class="kpi-val"><?php echo APP_CURRENCY . number_format($totalSales, 0, ',', '.'); ?></div>
       </div>
     </div>
 
@@ -178,7 +178,18 @@ if (!$db) {
             </tr>
           <?php else: ?>
             <?php foreach ($products as $p): 
-              $thumb = !empty($p['imagen_principal']) ? (strpos($p['imagen_principal'], 'assets/') === 0 ? '../' . $p['imagen_principal'] : $p['imagen_principal']) : '../assets/img/logo.jpg';
+              $imgSrc = $p['imagen_principal'] ?? '';
+              $localFile = __DIR__ . '/../' . ltrim(str_replace('../', '', $imgSrc), '/');
+              if (empty($imgSrc) || !file_exists($localFile)) {
+                  if ($p['id'] == 1 && file_exists(__DIR__ . '/../assets/img/florero_japandei_1.jpg')) {
+                      $imgSrc = 'assets/img/florero_japandei_1.jpg';
+                  } elseif ($p['id'] == 2 && file_exists(__DIR__ . '/../assets/img/florero_japandi_1.jpg')) {
+                      $imgSrc = 'assets/img/florero_japandi_1.jpg';
+                  } else {
+                      $imgSrc = 'assets/img/logo.jpg';
+                  }
+              }
+              $thumb = (strpos($imgSrc, 'assets/') === 0 || strpos($imgSrc, 'uploads/') === 0) ? '../' . $imgSrc : $imgSrc;
             ?>
               <tr>
                 <td>
@@ -191,7 +202,7 @@ if (!$db) {
                   <?php endif; ?>
                 </td>
                 <td><?php echo htmlspecialchars($p['categoria_nombre'] ?? 'Sin categoría'); ?></td>
-                <td><strong><?php echo CURRENCY_SYMBOL . number_format($p['precio'], 0, ',', '.'); ?></strong></td>
+                <td><strong><?php echo APP_CURRENCY . number_format($p['precio'], 0, ',', '.'); ?></strong></td>
                 <td>
                   <?php if ($p['customizable']): ?>
                     <span class="badge badge-success">✨ Sí</span>

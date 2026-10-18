@@ -60,11 +60,24 @@ header('Content-Type: text/html; charset=utf-8');
 
                 // Mostrar productos de la base de datos
                 require_once __DIR__ . '/config.php';
+
+                // Reparación automática de imágenes 1 y 2
+                try {
+                    $db->prepare("UPDATE producto_imagenes SET url_imagen = 'assets/img/florero_japandei_1.jpg', es_principal = 1 WHERE producto_id = 1")->execute();
+                    $db->prepare("UPDATE producto_imagenes SET url_imagen = 'assets/img/florero_japandi_1.jpg', es_principal = 1 WHERE producto_id = 2")->execute();
+                    $db->prepare("UPDATE configuracion SET valor = '$' WHERE clave = 'currency_symbol'")->execute();
+                    echo '<div class="item ok">✓ Base de datos sincronizada: fotos de Florero Japandei y Florero Japandi actualizadas a assets/img/</div>';
+                } catch (Throwable $te) {
+                    echo '<div class="item warn">Advertencia actualizando DB: ' . htmlspecialchars($te->getMessage()) . '</div>';
+                }
+
                 $dbImgs = $db->query("SELECT * FROM producto_imagenes ORDER BY producto_id ASC, id ASC")->fetchAll();
                 echo '<div class="item ok"><strong>Imágenes en DB:</strong><pre>' . htmlspecialchars(print_r($dbImgs, true)) . '</pre></div>';
 
                 $dbCfg = $db->query("SELECT * FROM configuracion")->fetchAll();
                 echo '<div class="item ok"><strong>Configuración en DB:</strong><pre>' . htmlspecialchars(print_r($dbCfg, true)) . '</pre></div>';
+
+                echo '<div class="item ok"><strong>Productos desde getProducts():</strong><pre>' . htmlspecialchars(print_r(array_slice(getProducts(), 0, 3), true)) . '</pre></div>';
 
                 echo '<div class="item ok"><strong>Archivos reales en assets/img/:</strong><pre>';
                 $imgDir = __DIR__ . '/assets/img';

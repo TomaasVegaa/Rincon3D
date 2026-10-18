@@ -45,28 +45,32 @@ ServerSignature Off
 </IfModule>
 
 # =============================================================================
-# CACHÉ DE NAVEGADOR (Mejora la velocidad de retorno)
+# CACHÉ DE NAVEGADOR CONTROLADA
 # =============================================================================
 <IfModule mod_expires.c>
   ExpiresActive On
-  ExpiresDefault "access plus 1 month"
 
-  # Imágenes y multimedia
-  ExpiresByType image/jpeg "access plus 1 year"
-  ExpiresByType image/jpg "access plus 1 year"
-  ExpiresByType image/png "access plus 1 year"
-  ExpiresByType image/webp "access plus 1 year"
-  ExpiresByType image/svg+xml "access plus 1 year"
-  ExpiresByType image/x-icon "access plus 1 year"
-
-  # Estilos CSS y Scripts JS
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
+  # Imágenes estáticas y multimedia
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/jpg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 month"
 
   # Fuentes web
   ExpiresByType font/woff2 "access plus 1 year"
   ExpiresByType font/woff "access plus 1 year"
 </IfModule>
+
+# FORZAR NO-CACHÉ EN ARCHIVOS DINÁMICOS PHP Y HTML (Evita que el panel y la tienda se queden congelados)
+<FilesMatch "\.(php|html)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "Mon, 26 Jul 1997 05:00:00 GMT"
+  </IfModule>
+</FilesMatch>
 
 # Cabeceras de seguridad básicas
 <IfModule mod_headers.c>

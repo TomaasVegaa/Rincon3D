@@ -18,3 +18,8 @@ error_log
 # Entorno de agentes
 .gemini/
 .agents/
+
+# Subidas de usuarios (preservadas en servidor, no tocadas por git)
+uploads/*
+!uploads/.gitkeep
+!uploads/.htaccess

@@ -1,25 +1,21 @@
 [
   {
     "id": 1,
-    "title": "Lámpara Litofanía Lunar Personalizada",
+    "title": "Florero Japandei",
     "category": "iluminacion",
     "categoryName": "Iluminación & Lámparas",
-    "price": 18500,
+    "price": 20000,
     "badge": "Más Vendido",
     "customizable": true,
-    "description": "Lámpara cilíndrica impresa en 3D con tecnología de litofanía de alta precisión sobre base de madera lustrada. Al encenderse, proyecta con calidez tus fotografías familiares o momentos favoritos con increíble relieve. Incluye luz LED cálida de bajo consumo y conexión USB.",
+    "description": "Florero de diseño minimalista estilo Japandi impreso en 3D con filamento biodegradable de textura acanalada. Aporta serenidad, calidez y un punto focal sofisticado a cualquier ambiente.",
     "images": [
-      "assets/img/lamp_litofania_1.jpg",
-      "assets/img/lamp_litofania_2.jpg"
+      "assets/img/florero_japandei_1.jpg"
     ],
     "colors": [
-      "Blanco Cálido Litofánico",
-      "Marfil Clásico",
-      "Rosa Suave Difuso"
+      "Blanco Cálido Litofánico"
     ],
     "specs": {
       "Material": "PLA Premium Biodegradable translúcido",
-      "Dimensiones": "18 cm de alto × 10 cm de diámetro",
       "Base": "Madera natural con acabado ecológico",
       "Iluminación": "Módulo LED cálido USB con interruptor",
       "Tiempo de fabricación": "48 a 72 horas hábiles"
@@ -27,29 +23,24 @@
   },
   {
     "id": 2,
-    "title": "Mate Geométrico Facetado 3D con Bombilla",
-    "category": "mates",
-    "categoryName": "Mates & Bazar",
-    "price": 9200,
+    "title": "Florero Japandi",
+    "category": "iluminacion",
+    "categoryName": "Iluminación & Lámparas",
+    "price": 20000,
     "badge": "Exclusivo",
     "customizable": true,
-    "description": "Mate con diseño poligonal facetado moderno y textura agradable al tacto. Incluye vaso interior térmico de polímero apto alimentos (BPA Free), no transmite calor a las manos y es sumamente fácil de limpiar con el método sacayerba. Incluye bombilla de acero inoxidable a tono.",
+    "description": "Florero cerámico orgánico estilo Japandi con curvatura contemporánea y textura estriada. Diseñado para arreglos secos, pampas y ramas de eucalipto en interiores modernos.",
     "images": [
-      "assets/img/mate_geometrico_1.jpg",
-      "assets/img/mate_geometrico_2.jpg"
+      "assets/img/florero_japandi_1.jpg"
     ],
     "colors": [
-      "Borgoña Rincón 3D",
-      "Rosa Empolvado",
-      "Negro Satinado",
-      "Oro Rosa Seda"
+      "Terracota"
     ],
     "specs": {
       "Material exterior": "PLA de alta resistencia con estrías poligonales",
       "Vaso interior": "Polímero térmico removible libre de BPA",
       "Accesorios": "Bombilla metálica con resorte desarmable",
-      "Capacidad": "40 g de yerba mate",
-      "Mantenimiento": "Apto lavado con agua tibia"
+      "Capacidad": "40 g de yerba mate"
     }
   },
   {

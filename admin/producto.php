@@ -168,8 +168,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $allowed = ['jpg', 'jpeg', 'png', 'webp'];
             if (in_array($ext, $allowed)) {
                 $newFilename = 'prod_' . ($productId ?: time()) . '_' . time() . '.' . $ext;
-                $targetPath = __DIR__ . '/../assets/img/' . $newFilename;
-                if (move_uploaded_file($_FILES['foto_archivo']['tmp_name'], $targetPath)) {
+                $uploadsDir = __DIR__ . '/../uploads';
+                if (!is_dir($uploadsDir)) {
+                    @mkdir($uploadsDir, 0777, true);
+                }
+                $targetUploads = $uploadsDir . '/' . $newFilename;
+                $targetAssets = __DIR__ . '/../assets/img/' . $newFilename;
+
+                if (move_uploaded_file($_FILES['foto_archivo']['tmp_name'], $targetUploads)) {
+                    @copy($targetUploads, $targetAssets);
+                    $uploadedImageUrls[] = 'uploads/' . $newFilename;
+                } elseif (file_exists($targetAssets) || move_uploaded_file($_FILES['foto_archivo']['tmp_name'], $targetAssets)) {
                     $uploadedImageUrls[] = 'assets/img/' . $newFilename;
                 }
             }
@@ -208,9 +217,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Insertar nuevas fotos en MySQL
+                $existingCount = (int)$db->query("SELECT COUNT(*) FROM producto_imagenes WHERE producto_id = " . (int)$productId)->fetchColumn();
+                $isFirst = ($existingCount === 0);
                 foreach ($uploadedImageUrls as $uImg) {
-                    $stmtImg = $db->prepare("INSERT INTO producto_imagenes (producto_id, url_imagen, orden, es_principal) VALUES (?, ?, 10, 0)");
-                    $stmtImg->execute([$productId, $uImg]);
+                    $esPrincipal = $isFirst ? 1 : 0;
+                    $stmtImg = $db->prepare("INSERT INTO producto_imagenes (producto_id, url_imagen, orden, es_principal) VALUES (?, ?, 1, ?)");
+                    $stmtImg->execute([$productId, $uImg, $esPrincipal]);
+                    $isFirst = false;
                 }
 
                 // Eliminar foto en MySQL si se solicitó

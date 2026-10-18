@@ -150,7 +150,7 @@ if ($db) {
                 </td>
                 <td>
                   <strong style="color: var(--admin-wine); font-size: 1rem;">
-                    <?php echo CURRENCY_SYMBOL . number_format($ped['total'], 0, ',', '.'); ?>
+                    <?php echo APP_CURRENCY . number_format($ped['total'], 0, ',', '.'); ?>
                   </strong>
                 </td>
                 <td>
@@ -178,7 +178,7 @@ if ($db) {
                           <?php if (!empty($item['personalizacion'])): ?>
                             <span style="color: var(--admin-wine);">Personalización: "<?php echo htmlspecialchars($item['personalizacion']); ?>"</span><br>
                           <?php endif; ?>
-                          <span>Subtotal: <?php echo CURRENCY_SYMBOL . number_format($item['subtotal'], 0, ',', '.'); ?></span>
+                          <span>Subtotal: <?php echo APP_CURRENCY . number_format($item['subtotal'], 0, ',', '.'); ?></span>
                         </div>
                       <?php endforeach; ?>
                       <?php if (!empty($ped['notas'])): ?>
