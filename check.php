@@ -60,11 +60,19 @@ header('Content-Type: text/html; charset=utf-8');
 
                 // Mostrar productos de la base de datos
                 require_once __DIR__ . '/config.php';
-                $dbProds = $db->query("SELECT id, titulo, categoria_id, precio, activo FROM productos ORDER BY id ASC LIMIT 5")->fetchAll();
-                echo '<div class="item ok"><strong>Productos en DB:</strong><pre>' . htmlspecialchars(print_r($dbProds, true)) . '</pre></div>';
-                
-                $prodsFromFunc = getProducts();
-                echo '<div class="item ok"><strong>Productos desde getProducts():</strong><pre>' . htmlspecialchars(print_r(array_slice($prodsFromFunc, 0, 3), true)) . '</pre></div>';
+                $dbImgs = $db->query("SELECT * FROM producto_imagenes ORDER BY producto_id ASC, id ASC")->fetchAll();
+                echo '<div class="item ok"><strong>Imágenes en DB:</strong><pre>' . htmlspecialchars(print_r($dbImgs, true)) . '</pre></div>';
+
+                $dbCfg = $db->query("SELECT * FROM configuracion")->fetchAll();
+                echo '<div class="item ok"><strong>Configuración en DB:</strong><pre>' . htmlspecialchars(print_r($dbCfg, true)) . '</pre></div>';
+
+                // Check file exists on disk
+                echo '<div class="item ok"><strong>Archivos en disco:</strong><pre>';
+                foreach ($dbImgs as $img) {
+                    $localPath = __DIR__ . '/' . $img['url_imagen'];
+                    echo $img['url_imagen'] . ' -> ' . (file_exists($localPath) ? 'EXISTE (' . filesize($localPath) . ' bytes)' : 'NO EXISTE') . "\n";
+                }
+                echo '</pre></div>';
             }
         } catch (Throwable $e) {
             echo '<div class="item err">✗ Error consultando tablas: ' . htmlspecialchars($e->getMessage()) . '</div>';
