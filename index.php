@@ -215,12 +215,76 @@ $categories = getCategories();
   <main class="catalog-section">
     <div class="container">
       <div class="catalog-meta-info">
-        <span id="products-count" class="products-count-text">Cargando catálogo...</span>
+        <span id="products-count" class="products-count-text"><?php echo count($products); ?> <?php echo count($products) === 1 ? 'producto' : 'productos'; ?></span>
       </div>
 
       <!-- Grilla interactiva de productos -->
       <div id="products-grid" class="products-grid">
-        <!-- Renderizado dinámicamente con JavaScript -->
+        <?php foreach ($products as $p): 
+          $mainImage = !empty($p['images'][0]) ? $p['images'][0] : 'assets/img/logo.jpg';
+        ?>
+          <article class="product-card" data-id="<?php echo $p['id']; ?>">
+            <div class="product-image-container" onclick="window.RinconApp && window.RinconApp.openModal(<?php echo $p['id']; ?>)">
+              <img src="<?php echo htmlspecialchars($mainImage); ?>" alt="<?php echo htmlspecialchars($p['title']); ?>" class="product-thumb-img" loading="lazy" onerror="this.src='assets/img/logo.jpg'" />
+              <?php if (!empty($p['badge'])): ?>
+                <span class="product-badge-tag"><?php echo htmlspecialchars($p['badge']); ?></span>
+              <?php endif; ?>
+              <?php if (!empty($p['customizable'])): ?>
+                <span class="product-custom-tag">✨ Personalizable</span>
+              <?php endif; ?>
+              <div class="product-quick-view-overlay">
+                <span class="quick-view-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Ver Detalle & Fotos
+                </span>
+              </div>
+            </div>
+            
+            <div class="product-card-body">
+              <span class="product-category-label"><?php echo htmlspecialchars($p['categoryName'] ?? 'Impresión 3D'); ?></span>
+              <h3 class="product-card-title" onclick="window.RinconApp && window.RinconApp.openModal(<?php echo $p['id']; ?>)"><?php echo htmlspecialchars($p['title']); ?></h3>
+              <p class="product-short-desc"><?php echo htmlspecialchars($p['description'] ?? ''); ?></p>
+              
+              <?php if (!empty($p['colors'])): ?>
+                <div class="product-color-dots">
+                  <?php foreach (array_slice($p['colors'], 0, 4) as $col): 
+                    $cl = strtolower($col);
+                    $bg = '#651226';
+                    if (strpos($cl, 'rosa') !== false) $bg = '#E8A598';
+                    elseif (strpos($cl, 'blanco') !== false || strpos($cl, 'marfil') !== false) $bg = '#F4EDE4';
+                    elseif (strpos($cl, 'negro') !== false || strpos($cl, 'obsidiana') !== false) $bg = '#222222';
+                    elseif (strpos($cl, 'oro') !== false || strpos($cl, 'cobre') !== false) $bg = '#C5983F';
+                    elseif (strpos($cl, 'verde') !== false || strpos($cl, 'salvia') !== false) $bg = '#8A9A86';
+                    elseif (strpos($cl, 'gris') !== false) $bg = '#8E8E93';
+                  ?>
+                    <span class="color-dot" style="background-color: <?php echo $bg; ?>;" title="<?php echo htmlspecialchars($col); ?>"></span>
+                  <?php endforeach; ?>
+                  <?php if (count($p['colors']) > 4): ?>
+                    <span class="color-dots-more">+<?php echo count($p['colors']) - 4; ?></span>
+                  <?php endif; ?>
+                </div>
+              <?php endif; ?>
+
+              <div class="product-card-footer">
+                <div class="product-price-box">
+                  <span class="product-price-label">Precio</span>
+                  <span class="product-price-val"><?php echo APP_CURRENCY . number_format($p['price'], 0, ',', '.'); ?></span>
+                </div>
+                <button type="button" class="add-cart-btn" onclick="window.RinconApp && window.RinconApp.quickAddToCart(<?php echo $p['id']; ?>, event)" aria-label="Agregar <?php echo htmlspecialchars($p['title']); ?> al carrito">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                  </svg>
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </article>
+        <?php endforeach; ?>
       </div>
     </div>
   </main>
