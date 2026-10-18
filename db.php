@@ -19,12 +19,12 @@ if (!defined('DB_HOST')) {
         define('DB_PASS', '');
     } else {
         // =====================================================================
-        // CONFIGURACIÓN PARA SERVIDOR / HOSTING
+        // CONFIGURACIÓN PARA HOSTINGER
         // =====================================================================
-        define('DB_HOST', 'sql309.infinityfree.com');
-        define('DB_NAME', 'if0_42396337_rincon3d');
-        define('DB_USER', 'if0_42396337');
-        define('DB_PASS', 'tomas140203');
+        define('DB_HOST', 'localhost');
+        define('DB_NAME', 'u390617164_rincon3D');
+        define('DB_USER', 'u390617164_rincon3D');
+        define('DB_PASS', 'Tomas140203');
     }
 }
 
