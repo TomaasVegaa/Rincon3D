@@ -66,12 +66,11 @@ header('Content-Type: text/html; charset=utf-8');
                 $dbCfg = $db->query("SELECT * FROM configuracion")->fetchAll();
                 echo '<div class="item ok"><strong>Configuración en DB:</strong><pre>' . htmlspecialchars(print_r($dbCfg, true)) . '</pre></div>';
 
-                // Check file exists on disk
-                echo '<div class="item ok"><strong>Archivos en disco:</strong><pre>';
-                foreach ($dbImgs as $img) {
-                    $localPath = __DIR__ . '/' . $img['url_imagen'];
-                    echo $img['url_imagen'] . ' -> ' . (file_exists($localPath) ? 'EXISTE (' . filesize($localPath) . ' bytes)' : 'NO EXISTE') . "\n";
-                }
+                echo '<div class="item ok"><strong>Archivos reales en assets/img/:</strong><pre>';
+                $imgDir = __DIR__ . '/assets/img';
+                echo "Directorio es escribible: " . (is_writable($imgDir) ? 'SI' : 'NO') . "\n";
+                $filesInDir = scandir($imgDir);
+                print_r($filesInDir);
                 echo '</pre></div>';
             }
         } catch (Throwable $e) {
