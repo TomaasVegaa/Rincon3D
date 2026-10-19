@@ -104,26 +104,27 @@
     updateCartUI();
   }
 
-  // Cargar productos (desde variable embebida de PHP o fetch JSON)
+  // Cargar productos (con sincronización en vivo e invalidación de caché)
   async function loadProducts() {
-    try {
-      if (window.INITIAL_PRODUCTS && Array.isArray(window.INITIAL_PRODUCTS) && window.INITIAL_PRODUCTS.length > 0) {
-        state.products = window.INITIAL_PRODUCTS;
-      } else {
-        const response = await fetch('data/products.json');
-        state.products = await response.json();
-      }
+    // 1. Mostrar de inmediato los productos del HTML
+    if (window.INITIAL_PRODUCTS && Array.isArray(window.INITIAL_PRODUCTS) && window.INITIAL_PRODUCTS.length > 0) {
+      state.products = window.INITIAL_PRODUCTS;
       applyFilters();
-    } catch (error) {
-      console.error('Error cargando productos:', error);
-      if (DOM.productsGrid) {
-        DOM.productsGrid.innerHTML = `
-          <div class="empty-catalog-state">
-            <h3>No pudimos cargar los productos</h3>
-            <p>Por favor refresca la página o intenta nuevamente más tarde.</p>
-          </div>
-        `;
+    }
+
+    // 2. Consultar siempre la API en vivo con timestamp anti-caché
+    try {
+      const response = await fetch('api/productos.php?t=' + Date.now(), { cache: 'no-store' });
+      if (response.ok) {
+        const liveProducts = await response.json();
+        if (Array.isArray(liveProducts) && liveProducts.length > 0) {
+          state.products = liveProducts;
+          applyFilters();
+          return;
+        }
       }
+    } catch (error) {
+      console.warn('Sincronización en vivo secundaria no disponible:', error);
     }
   }
 

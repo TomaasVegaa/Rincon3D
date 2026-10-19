@@ -107,7 +107,7 @@ if (!$db) {
       </nav>
 
       <div class="admin-user-menu">
-        <a href="../index.php" target="_blank" class="store-preview-btn">
+        <a href="../index.php?t=<?php echo time(); ?>" target="_blank" class="store-preview-btn">
           <span>Ver Tienda</span> ↗
         </a>
         <a href="logout.php" class="logout-btn">Salir</a>

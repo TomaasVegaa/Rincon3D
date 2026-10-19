@@ -18,7 +18,7 @@ $categories = getCategories();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo STORE_NAME; ?> | Tienda Online de Impresión 3D</title>
   <meta name="description" content="Descubre creaciones únicas en impresión 3D: lámparas litofanía, mates facetados, macetas geométricas, figuras coleccionables y regalos personalizados en Rincón 3D.">
-  <link rel="canonical" href="https://rincon3d.ct.ws/">
+  <link rel="canonical" href="https://rincon3dtuc.com/">
   
   <!-- Favicon con el logo de Rincón 3D -->
   <link rel="icon" type="image/jpeg" href="assets/img/logo.jpg">

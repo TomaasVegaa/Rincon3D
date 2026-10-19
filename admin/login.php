@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <div class="login-footer">
-      <a href="../index.php">← Volver a la Tienda</a>
+      <a href="../index.php?t=<?php echo time(); ?>">← Volver a la Tienda</a>
     </div>
   </div>
 </body>
