@@ -103,12 +103,12 @@ function getProducts() {
                     $u = $img['url_imagen'];
                     // Si el archivo en disco no existe (por ejemplo borrado o movido), usar imagen válida
                     $localPath = __DIR__ . '/' . $u;
-                    if (strpos($u, 'assets/') === 0 && !file_exists($localPath)) {
-                        if ($img['producto_id'] == 1 && file_exists(__DIR__ . '/assets/img/florero_japandei_1.jpg')) {
-                            $u = 'assets/img/florero_japandei_1.jpg';
-                        } elseif ($img['producto_id'] == 2 && file_exists(__DIR__ . '/assets/img/florero_japandi_1.jpg')) {
-                            $u = 'assets/img/florero_japandi_1.jpg';
-                        }
+                    if ($img['producto_id'] == 1 && ($u === 'assets/img/logo.jpg' || !file_exists($localPath))) {
+                        $u = 'assets/img/florero_japandei_1.jpg';
+                    } elseif ($img['producto_id'] == 2 && ($u === 'assets/img/logo.jpg' || !file_exists($localPath))) {
+                        $u = 'assets/img/florero_japandi_1.jpg';
+                    } elseif (strpos($u, 'assets/') === 0 && !file_exists($localPath)) {
+                        $u = 'assets/img/logo.jpg';
                     }
                     $imagesByProduct[$img['producto_id']][] = $u;
                 }

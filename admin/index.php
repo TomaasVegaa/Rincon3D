@@ -180,7 +180,7 @@ if (!$db) {
             <?php foreach ($products as $p): 
               $imgSrc = $p['imagen_principal'] ?? '';
               $localFile = __DIR__ . '/../' . ltrim(str_replace('../', '', $imgSrc), '/');
-              if (empty($imgSrc) || !file_exists($localFile)) {
+              if (empty($imgSrc) || $imgSrc === 'assets/img/logo.jpg' || !file_exists($localFile)) {
                   if ($p['id'] == 1 && file_exists(__DIR__ . '/../assets/img/florero_japandei_1.jpg')) {
                       $imgSrc = 'assets/img/florero_japandei_1.jpg';
                   } elseif ($p['id'] == 2 && file_exists(__DIR__ . '/../assets/img/florero_japandi_1.jpg')) {
