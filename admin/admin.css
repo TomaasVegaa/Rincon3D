@@ -11,7 +11,7 @@
   --admin-blush: #F5E5E5;
   --admin-blush-border: #E8CFD1;
   --admin-bg: #F8F5F5;
-  --admin-surface: #FFFFFF;
+  --admin-surface: rgba(255, 255, 255, 0.95);
   --admin-text: #2A171A;
   --admin-muted: #786066;
   --admin-success: #1E7E4E;
@@ -26,6 +26,8 @@
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
+
+  --admin-default-bg-image: url('../assets/img/admin_bg_3dprinter.jpg');
 }
 
 *, *::before, *::after {
@@ -37,6 +39,13 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--admin-bg);
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.95) 0%, rgba(248, 245, 245, 0.92) 50%, rgba(245, 235, 237, 0.94) 100%),
+    var(--admin-custom-bg, var(--admin-default-bg-image));
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--admin-text);
   line-height: 1.5;
   min-height: 100vh;
@@ -56,11 +65,19 @@ a {
   justify-content: center;
   min-height: 100vh;
   padding: 1.5rem;
-  background: linear-gradient(135deg, var(--admin-blush) 0%, #FFFFFF 50%, #FAF0F0 100%);
+  background-color: var(--admin-bg);
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(245, 229, 229, 0.90) 50%, rgba(248, 245, 245, 0.95) 100%),
+    var(--admin-custom-bg, var(--admin-default-bg-image));
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
 }
 
 .login-card {
   background: var(--admin-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--admin-blush-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 16px 40px rgba(101, 18, 38, 0.12);
@@ -255,10 +272,12 @@ a {
 
 .kpi-card {
   background: var(--admin-surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--admin-blush-border);
   border-radius: var(--radius-md);
   padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(101, 18, 38, 0.04);
+  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.05);
 }
 
 .kpi-label {
@@ -331,10 +350,12 @@ a {
 /* Tablas */
 .card-table-wrapper {
   background: var(--admin-surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--admin-blush-border);
   border-radius: var(--radius-md);
   overflow-x: auto;
-  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.04);
+  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.05);
 }
 
 .admin-table {
@@ -410,10 +431,12 @@ a {
 /* Formularios */
 .form-card {
   background: var(--admin-surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--admin-blush-border);
   border-radius: var(--radius-md);
   padding: 2rem;
-  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.04);
+  box-shadow: 0 4px 14px rgba(101, 18, 38, 0.05);
   max-width: 800px;
 }
 

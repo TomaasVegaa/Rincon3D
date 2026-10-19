@@ -128,25 +128,20 @@
     }
   }
 
-  // Preferencia del banner (ocultar / mostrar según audio del usuario)
+  // El banner de marca se mantiene siempre visible de forma permanente
   function loadBannerPreference() {
-    const saved = localStorage.getItem('rincon3d_show_banner');
-    if (saved !== null) {
-      state.bannerVisible = saved === 'true';
+    state.bannerVisible = true;
+    if (DOM.heroBanner) {
+      DOM.heroBanner.classList.remove('banner-hidden');
     }
-    updateBannerState();
+    try {
+      localStorage.removeItem('rincon3d_show_banner');
+    } catch (e) {}
   }
 
   function updateBannerState() {
     if (!DOM.heroBanner) return;
-    if (state.bannerVisible) {
-      DOM.heroBanner.classList.remove('banner-hidden');
-      if (DOM.toggleBannerText) DOM.toggleBannerText.textContent = 'Ocultar marca';
-    } else {
-      DOM.heroBanner.classList.add('banner-hidden');
-      if (DOM.toggleBannerText) DOM.toggleBannerText.textContent = 'Ver marca';
-    }
-    localStorage.setItem('rincon3d_show_banner', state.bannerVisible);
+    DOM.heroBanner.classList.remove('banner-hidden');
   }
 
   // Filtros, búsqueda y ordenamiento
@@ -797,13 +792,6 @@
       });
     }
 
-    // Toggle banner de marca (pedido en audio)
-    if (DOM.toggleBannerBtn) {
-      DOM.toggleBannerBtn.addEventListener('click', () => {
-        state.bannerVisible = !state.bannerVisible;
-        updateBannerState();
-      });
-    }
 
     // Modal de producto
     if (DOM.modalCloseBtn) DOM.modalCloseBtn.addEventListener('click', closeModal);

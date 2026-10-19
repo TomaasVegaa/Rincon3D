@@ -8,6 +8,28 @@ $messageType = 'success';
 
 // Guardar configuración
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $adminBgImage = trim($_POST['admin_bg_image'] ?? 'assets/img/admin_bg_3dprinter.jpg');
+    if (empty($adminBgImage)) {
+        $adminBgImage = 'assets/img/admin_bg_3dprinter.jpg';
+    }
+
+    // Procesar subida de imagen de fondo personalizada para el panel
+    if (isset($_FILES['admin_bg_file']) && $_FILES['admin_bg_file']['error'] === UPLOAD_ERR_OK) {
+        $tmp = $_FILES['admin_bg_file']['tmp_name'];
+        $ext = strtolower(pathinfo($_FILES['admin_bg_file']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
+        if (in_array($ext, $allowed)) {
+            $uploadsDir = __DIR__ . '/../uploads';
+            if (!is_dir($uploadsDir)) {
+                @mkdir($uploadsDir, 0755, true);
+            }
+            $filename = 'admin_bg_' . time() . '.' . $ext;
+            if (move_uploaded_file($tmp, $uploadsDir . '/' . $filename)) {
+                $adminBgImage = 'uploads/' . $filename;
+            }
+        }
+    }
+
     $settings = [
         'store_name' => trim($_POST['store_name'] ?? 'Rincón 3D'),
         'store_tagline' => trim($_POST['store_tagline'] ?? ''),
@@ -20,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'bank_discount_percent' => (float)($_POST['bank_discount_percent'] ?? 10),
         'banner_visible' => isset($_POST['banner_visible']) ? 1 : 0,
         'banner_title' => trim($_POST['banner_title'] ?? ''),
-        'banner_description' => trim($_POST['banner_description'] ?? '')
+        'banner_description' => trim($_POST['banner_description'] ?? ''),
+        'admin_bg_image' => $adminBgImage
     ];
 
     // 1. Guardar en MySQL si está disponible
@@ -67,7 +90,8 @@ $current = [
     'bank_discount_percent' => BANK_DISCOUNT_PERCENT,
     'banner_visible' => BANNER_VISIBLE,
     'banner_title' => BANNER_TITLE,
-    'banner_description' => BANNER_DESCRIPTION
+    'banner_description' => BANNER_DESCRIPTION,
+    'admin_bg_image' => ADMIN_BG_IMAGE
 ];
 
 $settingsFromDb = false;
@@ -104,6 +128,7 @@ if (!$settingsFromDb) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css">
+  <?php echo renderAdminBgStyle(); ?>
 </head>
 <body>
 
@@ -144,7 +169,7 @@ if (!$settingsFromDb) {
       </div>
     <?php endif; ?>
 
-    <form method="POST" class="form-card" style="max-width: 900px;">
+    <form method="POST" enctype="multipart/form-data" class="form-card" style="max-width: 900px;">
       
       <!-- Sección WhatsApp & Marca -->
       <h3 style="font-family: var(--font-serif); font-size: 1.25rem; color: var(--admin-wine); margin-bottom: 1rem;">
@@ -234,6 +259,46 @@ if (!$settingsFromDb) {
         </div>
       </div>
 
+      <hr style="border: none; border-top: 1px solid var(--admin-blush-border); margin: 2rem 0;">
+
+      <!-- Sección Fondo Temático del Admin -->
+      <h3 style="font-family: var(--font-serif); font-size: 1.25rem; color: var(--admin-wine); margin-bottom: 0.5rem;">
+        🖼️ Fondo Temático del Panel (Máquina 3D / Taller)
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--admin-muted); margin-bottom: 1.25rem;">
+        Personaliza la imagen de fondo de todo el panel de administración. El sistema le aplica automáticamente una capa translúcida para que la máquina 3D decore el fondo con estilo sutil, sin estorbar la lectura de datos, tablas ni botones.
+      </p>
+
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="form-label">Ruta o URL de la Imagen de Fondo</label>
+          <input type="text" name="admin_bg_image" id="admin_bg_image_input" class="form-control" value="<?php echo htmlspecialchars($current['admin_bg_image'] ?? 'assets/img/admin_bg_3dprinter.jpg'); ?>" placeholder="assets/img/admin_bg_3dprinter.jpg">
+          <span style="font-size: 0.75rem; color: var(--admin-muted);">Predeterminada: <code>assets/img/admin_bg_3dprinter.jpg</code> (Máquina de impresión 3D en taller)</span>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Vista Previa & Carga de Imagen</label>
+          <div style="display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap;">
+            <div style="width: 170px; height: 100px; border-radius: var(--radius-sm); overflow: hidden; border: 2px solid var(--admin-blush-border); box-shadow: 0 4px 12px rgba(101,18,38,0.1); background: #f0f0f0;">
+              <?php 
+                $bgImgVal = $current['admin_bg_image'] ?? 'assets/img/admin_bg_3dprinter.jpg';
+                $bgImgSrc = (strpos($bgImgVal, 'http') === 0 || strpos($bgImgVal, 'data:') === 0) ? $bgImgVal : '../' . ltrim($bgImgVal, '/');
+              ?>
+              <img id="admin_bg_preview_img" src="<?php echo htmlspecialchars($bgImgSrc); ?>" alt="Fondo Admin" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='../assets/img/admin_bg_3dprinter.jpg'">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+              <input type="file" name="admin_bg_file" id="admin_bg_file_input" accept="image/*" style="display: none;">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('admin_bg_file_input').click()">
+                📷 Subir Nueva Foto desde tu Dispositivo
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="resetDefaultBg()">
+                🔄 Restaurar Máquina 3D por Defecto
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style="margin-top: 2rem;">
         <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1rem;">
           💾 Guardar Ajustes
@@ -242,5 +307,39 @@ if (!$settingsFromDb) {
 
     </form>
   </main>
+
+  <script>
+    const bgFileInput = document.getElementById('admin_bg_file_input');
+    const bgImgInput = document.getElementById('admin_bg_image_input');
+    const bgPreviewImg = document.getElementById('admin_bg_preview_img');
+
+    if (bgFileInput) {
+      bgFileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            if (bgPreviewImg) bgPreviewImg.src = evt.target.result;
+          };
+          reader.readAsDataURL(this.files[0]);
+        }
+      });
+    }
+
+    if (bgImgInput) {
+      bgImgInput.addEventListener('input', function() {
+        const val = this.value.trim();
+        if (val) {
+          const src = (val.startsWith('http') || val.startsWith('data:')) ? val : '../' + val.replace(/^\//, '');
+          if (bgPreviewImg) bgPreviewImg.src = src;
+        }
+      });
+    }
+
+    function resetDefaultBg() {
+      if (bgImgInput) bgImgInput.value = 'assets/img/admin_bg_3dprinter.jpg';
+      if (bgPreviewImg) bgPreviewImg.src = '../assets/img/admin_bg_3dprinter.jpg';
+      if (bgFileInput) bgFileInput.value = '';
+    }
+  </script>
 </body>
 </html>

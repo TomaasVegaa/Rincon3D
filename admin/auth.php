@@ -62,3 +62,12 @@ function attemptLogin($username, $password) {
 
     return false;
 }
+
+/**
+ * Renderiza la variable CSS --admin-custom-bg para el fondo temático (máquina 3D)
+ */
+function renderAdminBgStyle() {
+    $bg = defined('ADMIN_BG_IMAGE') && !empty(ADMIN_BG_IMAGE) ? ADMIN_BG_IMAGE : 'assets/img/admin_bg_3dprinter.jpg';
+    $bgUrl = (strpos($bg, 'http') === 0 || strpos($bg, 'data:') === 0) ? $bg : '../' . ltrim($bg, '/');
+    return "<style>:root { --admin-custom-bg: url('" . htmlspecialchars($bgUrl, ENT_QUOTES) . "'); }</style>\n";
+}

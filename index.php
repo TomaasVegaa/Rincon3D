@@ -112,16 +112,8 @@ $categories = getCategories();
           </div>
         </div>
 
-        <!-- Acciones del header: botón banner y carrito -->
+        <!-- Acciones del header: carrito -->
         <div class="header-actions">
-          <button type="button" id="toggle-banner-btn" class="toggle-banner-btn" title="Alternar visibilidad del banner de presentación">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-            </svg>
-            <span id="toggle-banner-text">Ocultar marca</span>
-          </button>
-
           <button type="button" id="cart-trigger-btn" class="cart-trigger-btn" aria-label="Abrir carrito de compras">
             <svg class="cart-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
