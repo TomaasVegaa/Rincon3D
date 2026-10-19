@@ -460,11 +460,12 @@ if (isset($_GET['saved'])) {
       <?php if (!empty($product['imagenes'])): ?>
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
           <?php foreach ($product['imagenes'] as $img): 
-            $imgSrc = strpos($img['url_imagen'], 'assets/') === 0 ? '../' . $img['url_imagen'] : $img['url_imagen'];
+            $u = $img['url_imagen'];
+            $imgSrc = (strpos($u, 'assets/') === 0 || strpos($u, 'uploads/') === 0) ? '../' . $u : $u;
           ?>
-            <div style="position: relative; width: 110px; height: 110px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--admin-blush-border);">
-              <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="Foto" style="width: 100%; height: 100%; object-fit: cover;">
-              <button type="submit" name="eliminar_imagen_id" value="<?php echo $img['id']; ?>" onclick="return confirm('¿Eliminar esta foto de la galería?')" style="position: absolute; top: 4px; right: 4px; background: rgba(220,38,38,0.85); color: #fff; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: bold; border: none; cursor: pointer;">
+            <div style="position: relative; width: 110px; height: 110px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--admin-blush-border); background: #fdf2f4;">
+              <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="Foto" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='../assets/img/logo.jpg';">
+              <button type="submit" name="eliminar_imagen_id" value="<?php echo $img['id']; ?>" onclick="return confirm('¿Eliminar esta foto de la galería?')" style="position: absolute; top: 4px; right: 4px; background: rgba(220,38,38,0.9); color: #fff; border-radius: 50%; width: 26px; height: 26px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" title="Eliminar foto">
                 ✕
               </button>
             </div>
@@ -474,8 +475,18 @@ if (isset($_GET['saved'])) {
 
       <div class="form-grid">
         <div class="form-group">
-          <label class="form-label">Subir nueva foto desde tu computadora</label>
-          <input type="file" name="foto_archivo" accept="image/*" class="form-control">
+          <label class="form-label">Subir nueva foto desde tu computadora o celular</label>
+          <input type="file" name="foto_archivo" id="foto_archivo_input" accept="image/jpeg,image/png,image/webp" class="form-control" onchange="previewSelectedPhoto(this)">
+          
+          <!-- Vista previa instantánea antes de guardar -->
+          <div id="photo_preview_box" style="display: none; margin-top: 0.75rem; align-items: center; gap: 0.75rem; background: #FFF5F7; padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px dashed var(--admin-wine);">
+            <img id="photo_preview_img" src="" alt="Vista previa" style="width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--admin-blush-border);">
+            <div>
+              <span style="font-weight: 700; color: var(--admin-wine); font-size: 0.88rem;">✓ Foto lista para subir</span><br>
+              <span id="photo_preview_name" style="font-size: 0.75rem; color: var(--admin-muted);"></span><br>
+              <span style="font-size: 0.72rem; color: #15803d; font-weight: 600;">Presiona "Guardar Producto" abajo para aplicarla</span>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">O agregar foto por URL web</label>
@@ -513,5 +524,25 @@ if (isset($_GET['saved'])) {
 
     </form>
   </main>
+
+  <script>
+  function previewSelectedPhoto(input) {
+    var box = document.getElementById('photo_preview_box');
+    var img = document.getElementById('photo_preview_img');
+    var name = document.getElementById('photo_preview_name');
+    if (input.files && input.files[0]) {
+      var file = input.files[0];
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        img.src = e.target.result;
+        name.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+        box.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      box.style.display = 'none';
+    }
+  }
+  </script>
 </body>
 </html>
