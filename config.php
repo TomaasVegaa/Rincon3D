@@ -23,6 +23,7 @@ $defaults = [
     'banner_visible' => 1,
     'banner_title' => 'Arte, diseño y tecnología en cada rincón',
     'banner_description' => 'Fabricamos piezas únicas con filamentos biodegradables de primera calidad. Desde recuerdos personalizados en litofanía y mates térmicos hasta iluminación ambiental y decoración.',
+    'banner_image' => 'assets/img/admin_bg_3dprinter.jpg',
     'admin_bg_image' => 'assets/img/admin_bg_3dprinter.jpg'
 ];
 
@@ -71,6 +72,7 @@ if (!defined('BANK_DISCOUNT_PERCENT')) define('BANK_DISCOUNT_PERCENT', (float)$d
 if (!defined('BANNER_VISIBLE')) define('BANNER_VISIBLE', (int)$defaults['banner_visible']);
 if (!defined('BANNER_TITLE')) define('BANNER_TITLE', $defaults['banner_title']);
 if (!defined('BANNER_DESCRIPTION')) define('BANNER_DESCRIPTION', $defaults['banner_description']);
+if (!defined('BANNER_IMAGE')) define('BANNER_IMAGE', $defaults['banner_image']);
 if (!defined('ADMIN_BG_IMAGE')) define('ADMIN_BG_IMAGE', $defaults['admin_bg_image']);
 
 /**

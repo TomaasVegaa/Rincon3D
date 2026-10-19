@@ -128,8 +128,8 @@ $categories = getCategories();
     </div>
   </header>
 
-  <!-- Banner Hero de Marca (Diseño refinado, con toggle de ocultar según preferencia) -->
-  <section id="hero-banner" class="hero-brand-banner">
+  <!-- Banner Hero de Marca (Diseño refinado, con foto temática o personalizada) -->
+  <section id="hero-banner" class="hero-brand-banner" style="<?php if (defined('BANNER_IMAGE') && BANNER_IMAGE && BANNER_IMAGE !== 'assets/img/logo.jpg'): ?>background-image: linear-gradient(135deg, rgba(253, 248, 248, 0.93) 0%, rgba(255, 255, 255, 0.88) 50%, rgba(248, 238, 240, 0.94) 100%), url('<?php echo htmlspecialchars(BANNER_IMAGE); ?>'); background-size: cover; background-position: center;<?php endif; ?>">
     <div class="container">
       <div class="hero-inner">
         <div class="hero-content">
@@ -170,7 +170,7 @@ $categories = getCategories();
         </div>
 
         <div class="hero-logo-card">
-          <img src="assets/img/logo.jpg" alt="Rincón 3D Logo" class="hero-logo-preview">
+          <img src="<?php echo htmlspecialchars(defined('BANNER_IMAGE') && BANNER_IMAGE ? BANNER_IMAGE : 'assets/img/admin_bg_3dprinter.jpg'); ?>" alt="<?php echo htmlspecialchars(STORE_NAME); ?>" class="hero-logo-preview" onerror="this.src='assets/img/logo.jpg'">
           <p>Pasión por los detalles</p>
         </div>
       </div>

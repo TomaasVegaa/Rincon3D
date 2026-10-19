@@ -8,22 +8,40 @@ $messageType = 'success';
 
 // Guardar configuración
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $uploadsDir = __DIR__ . '/../uploads';
+    if (!is_dir($uploadsDir)) {
+        @mkdir($uploadsDir, 0755, true);
+    }
+    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'jfif', 'gif'];
+
+    // 1. Procesar foto para el Banner de la tienda (Front)
+    $bannerImage = trim($_POST['banner_image'] ?? 'assets/img/admin_bg_3dprinter.jpg');
+    if (empty($bannerImage)) {
+        $bannerImage = 'assets/img/admin_bg_3dprinter.jpg';
+    }
+
+    if (isset($_FILES['banner_image_file']) && $_FILES['banner_image_file']['error'] === UPLOAD_ERR_OK) {
+        $tmp = $_FILES['banner_image_file']['tmp_name'];
+        $ext = strtolower(pathinfo($_FILES['banner_image_file']['name'], PATHINFO_EXTENSION));
+        if (in_array($ext, $allowed)) {
+            $filename = 'banner_' . time() . '_' . mt_rand(100, 999) . '.' . $ext;
+            if (move_uploaded_file($tmp, $uploadsDir . '/' . $filename)) {
+                $bannerImage = 'uploads/' . $filename;
+            }
+        }
+    }
+
+    // 2. Procesar imagen de fondo para el panel de administración
     $adminBgImage = trim($_POST['admin_bg_image'] ?? 'assets/img/admin_bg_3dprinter.jpg');
     if (empty($adminBgImage)) {
         $adminBgImage = 'assets/img/admin_bg_3dprinter.jpg';
     }
 
-    // Procesar subida de imagen de fondo personalizada para el panel
     if (isset($_FILES['admin_bg_file']) && $_FILES['admin_bg_file']['error'] === UPLOAD_ERR_OK) {
         $tmp = $_FILES['admin_bg_file']['tmp_name'];
         $ext = strtolower(pathinfo($_FILES['admin_bg_file']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
         if (in_array($ext, $allowed)) {
-            $uploadsDir = __DIR__ . '/../uploads';
-            if (!is_dir($uploadsDir)) {
-                @mkdir($uploadsDir, 0755, true);
-            }
-            $filename = 'admin_bg_' . time() . '.' . $ext;
+            $filename = 'admin_bg_' . time() . '_' . mt_rand(100, 999) . '.' . $ext;
             if (move_uploaded_file($tmp, $uploadsDir . '/' . $filename)) {
                 $adminBgImage = 'uploads/' . $filename;
             }
@@ -43,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'banner_visible' => isset($_POST['banner_visible']) ? 1 : 0,
         'banner_title' => trim($_POST['banner_title'] ?? ''),
         'banner_description' => trim($_POST['banner_description'] ?? ''),
+        'banner_image' => $bannerImage,
         'admin_bg_image' => $adminBgImage
     ];
 
@@ -91,6 +110,7 @@ $current = [
     'banner_visible' => BANNER_VISIBLE,
     'banner_title' => BANNER_TITLE,
     'banner_description' => BANNER_DESCRIPTION,
+    'banner_image' => BANNER_IMAGE,
     'admin_bg_image' => ADMIN_BG_IMAGE
 ];
 
@@ -218,6 +238,37 @@ if (!$settingsFromDb) {
           <label class="form-label">Descripción del Banner</label>
           <textarea name="banner_description" class="form-control" rows="2"><?php echo htmlspecialchars($current['banner_description']); ?></textarea>
         </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Foto del Banner de la Tienda (Frontend)</label>
+          <input type="text" name="banner_image" id="banner_image_input" class="form-control" value="<?php echo htmlspecialchars($current['banner_image'] ?? 'assets/img/admin_bg_3dprinter.jpg'); ?>" placeholder="assets/img/admin_bg_3dprinter.jpg">
+          <span style="font-size: 0.75rem; color: var(--admin-muted);">Foto principal que se muestra en el banner al ingresar a la tienda.</span>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Vista Previa & Subida de Foto para el Banner</label>
+          <div style="display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap;">
+            <div style="width: 170px; height: 110px; border-radius: var(--radius-sm); overflow: hidden; border: 2px solid var(--admin-blush-border); box-shadow: 0 4px 12px rgba(101,18,38,0.1); background: #f0f0f0;">
+              <?php 
+                $bImgVal = $current['banner_image'] ?? 'assets/img/admin_bg_3dprinter.jpg';
+                $bImgSrc = (strpos($bImgVal, 'http') === 0 || strpos($bImgVal, 'data:') === 0) ? $bImgVal : '../' . ltrim($bImgVal, '/');
+              ?>
+              <img id="banner_preview_img" src="<?php echo htmlspecialchars($bImgSrc); ?>" alt="Banner Preview" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='../assets/img/logo.jpg'">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+              <input type="file" name="banner_image_file" id="banner_image_file_input" accept="image/*" style="display: none;">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('banner_image_file_input').click()">
+                📷 Subir Nueva Foto para el Banner
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="use3dPrinterForBanner()">
+                🔄 Usar Foto Máquina 3D
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="useLogoForBanner()">
+                🏷️ Usar Logo Rincón 3D
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <hr style="border: none; border-top: 1px solid var(--admin-blush-border); margin: 2rem 0;">
@@ -309,6 +360,7 @@ if (!$settingsFromDb) {
   </main>
 
   <script>
+    // 1. Manejo de preview para Fondo del Admin
     const bgFileInput = document.getElementById('admin_bg_file_input');
     const bgImgInput = document.getElementById('admin_bg_image_input');
     const bgPreviewImg = document.getElementById('admin_bg_preview_img');
@@ -339,6 +391,45 @@ if (!$settingsFromDb) {
       if (bgImgInput) bgImgInput.value = 'assets/img/admin_bg_3dprinter.jpg';
       if (bgPreviewImg) bgPreviewImg.src = '../assets/img/admin_bg_3dprinter.jpg';
       if (bgFileInput) bgFileInput.value = '';
+    }
+
+    // 2. Manejo de preview para Foto del Banner
+    const bannerFileInput = document.getElementById('banner_image_file_input');
+    const bannerImgInput = document.getElementById('banner_image_input');
+    const bannerPreviewImg = document.getElementById('banner_preview_img');
+
+    if (bannerFileInput) {
+      bannerFileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            if (bannerPreviewImg) bannerPreviewImg.src = evt.target.result;
+          };
+          reader.readAsDataURL(this.files[0]);
+        }
+      });
+    }
+
+    if (bannerImgInput) {
+      bannerImgInput.addEventListener('input', function() {
+        const val = this.value.trim();
+        if (val) {
+          const src = (val.startsWith('http') || val.startsWith('data:')) ? val : '../' + val.replace(/^\//, '');
+          if (bannerPreviewImg) bannerPreviewImg.src = src;
+        }
+      });
+    }
+
+    function use3dPrinterForBanner() {
+      if (bannerImgInput) bannerImgInput.value = 'assets/img/admin_bg_3dprinter.jpg';
+      if (bannerPreviewImg) bannerPreviewImg.src = '../assets/img/admin_bg_3dprinter.jpg';
+      if (bannerFileInput) bannerFileInput.value = '';
+    }
+
+    function useLogoForBanner() {
+      if (bannerImgInput) bannerImgInput.value = 'assets/img/logo.jpg';
+      if (bannerPreviewImg) bannerPreviewImg.src = '../assets/img/logo.jpg';
+      if (bannerFileInput) bannerFileInput.value = '';
     }
   </script>
 </body>

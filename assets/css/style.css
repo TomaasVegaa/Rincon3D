@@ -405,24 +405,27 @@ img {
 }
 
 .hero-logo-card {
-  background: #FFFFFF;
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.85rem;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 10px 25px rgba(101, 18, 38, 0.08);
   border: 1px solid var(--blush-border);
   text-align: center;
-  width: 220px;
+  width: 240px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .hero-logo-preview {
-  width: 140px;
-  height: 140px;
+  width: 100%;
+  height: 150px;
   border-radius: var(--radius-md);
   object-fit: cover;
   margin-bottom: 0.6rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .hero-logo-card p {
