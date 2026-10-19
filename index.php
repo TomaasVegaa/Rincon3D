@@ -508,11 +508,17 @@ $categories = getCategories();
         <div class="footer-col">
           <h4>Categorías</h4>
           <ul>
-            <li><a href="javascript:void(0)" onclick="document.querySelector('.cat-pill[data-category=\'iluminacion\']').click()">Lámparas & Veladores</a></li>
-            <li><a href="javascript:void(0)" onclick="document.querySelector('.cat-pill[data-category=\'mates\']').click()">Mates & Bazar 3D</a></li>
-            <li><a href="javascript:void(0)" onclick="document.querySelector('.cat-pill[data-category=\'decoracion\']').click()">Macetas & Hogar</a></li>
-            <li><a href="javascript:void(0)" onclick="document.querySelector('.cat-pill[data-category=\'organizacion\']').click()">Organización de Escritorio</a></li>
-            <li><a href="javascript:void(0)" onclick="document.querySelector('.cat-pill[data-category=\'figuras\']').click()">Figuras Coleccionables</a></li>
+            <?php if (!empty($categories)): ?>
+              <?php foreach ($categories as $cat): ?>
+                <li>
+                  <a href="javascript:void(0)" onclick="const p = document.querySelector('.cat-pill[data-category=\'<?php echo htmlspecialchars($cat['slug']); ?>\']'); if(p){ p.click(); document.querySelector('.catalog-toolbar-section')?.scrollIntoView({behavior:'smooth'}); }">
+                    <?php echo !empty($cat['icono']) ? htmlspecialchars($cat['icono']) . ' ' : ''; ?><?php echo htmlspecialchars($cat['nombre']); ?>
+                  </a>
+                </li>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <li><a href="javascript:void(0)" onclick="document.querySelector('.cat-pill[data-category=\'all\']')?.click()">Ver Catálogo</a></li>
+            <?php endif; ?>
           </ul>
         </div>
         <div class="footer-col">
@@ -521,7 +527,20 @@ $categories = getCategories();
             <li>📍 Taller de producción 3D</li>
             <li>🚚 Envíos a todo el país</li>
             <li>💳 Transferencia con 10% OFF o Efectivo</li>
-            <li>📲 WhatsApp: +<?php echo WHATSAPP_PHONE; ?></li>
+            <?php 
+              $cleanPhone = preg_replace('/[^0-9]/', '', WHATSAPP_PHONE);
+              $displayPhone = WHATSAPP_PHONE;
+              if (strlen($cleanPhone) === 13 && strpos($cleanPhone, '549') === 0) {
+                  $displayPhone = '+54 9 ' . substr($cleanPhone, 3, 3) . ' ' . substr($cleanPhone, 6, 3) . '-' . substr($cleanPhone, 9);
+              } elseif (strlen($cleanPhone) >= 10) {
+                  $displayPhone = '+' . $cleanPhone;
+              }
+            ?>
+            <li>
+              <a href="https://wa.me/<?php echo $cleanPhone; ?>?text=<?php echo urlencode('¡Hola! Me gustaría hacer una consulta sobre la tienda online.'); ?>" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.4);">
+                📲 WhatsApp: <?php echo htmlspecialchars($displayPhone); ?>
+              </a>
+            </li>
           </ul>
         </div>
       </div>
