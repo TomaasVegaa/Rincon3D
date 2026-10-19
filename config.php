@@ -137,7 +137,16 @@ function getProducts() {
                 $products = [];
                 foreach ($rows as $r) {
                     $pid = (int)$r['id'];
-                    $imgs = $imagesByProduct[$pid] ?? ['assets/img/logo.jpg'];
+                    $imgs = $imagesByProduct[$pid] ?? [];
+                    if (empty($imgs) || $imgs[0] === 'assets/img/logo.jpg') {
+                        if ($pid === 1 && file_exists(__DIR__ . '/assets/img/florero_japandei_1.jpg')) {
+                            $imgs = ['assets/img/florero_japandei_1.jpg'];
+                        } elseif ($pid === 2 && file_exists(__DIR__ . '/assets/img/florero_japandi_1.jpg')) {
+                            $imgs = ['assets/img/florero_japandi_1.jpg'];
+                        } else {
+                            $imgs = ['assets/img/logo.jpg'];
+                        }
+                    }
                     $cols = $colorsByProduct[$pid] ?? [];
                     $specs = $specsByProduct[$pid] ?? [];
 
